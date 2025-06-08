@@ -127,15 +127,17 @@ def _print_help():
     
     -I, --infinite        run in infinite mode, infinitely growing same tree
     -n, --new             run in infinite mode, automatically growing new trees
-    -W, --wait-infinite   time delay between drawing new trees in infinite mode [default {Options.INFINITE_WAIT_TIME}]
+    -W, --wait-infinite   time delay between drawing in infinite mode [default {Options.INFINITE_WAIT_TIME}]
 """
-    usage = "usage: pybonsai [-h] [--version] [-s SEED] [-i] [-w WAIT] [-W WAIT_INFINITE] \
-[-I] [-n] [-c BRANCH_CHARS] [-C LEAF_CHARS] [-x WIDTH] [-y HEIGHT] [-t {{0,1,2,3}}] \
-[-S START_LEN] [-L LEAF_LEN] [-l LAYERS] [-a ANGLE] [-f]"
+    USAGE = ("usage: pybonsai [-h] [--version] [-s SEED] [-i] [-w WAIT] "
+             "[-c BRANCH_CHARS] [-C LEAF_CHARS] [-x WIDTH] [-y HEIGHT] [-t TYPE] "
+             "[-S START_LEN] [-L LEAF_LEN] [-l LAYERS] [-a ANGLE] [-f] "
+             "[-I] [-n] [-W WAIT_INFINITE]")
 
-    print(usage)
     print()
     print(DESC)
+    print()
+    print(USAGE)
     print()
     print(OPTION_DESCS)
     exit()
@@ -184,7 +186,7 @@ def parse_cli_args():
     options.num_layers = args.layers
     options.angle_mean = radians(args.angle)
     options.fixed_window = args.fixed_window
-    options.infinite = args.infinite
+    options.infinite = args.infinite or args.new
     options.new = args.new
     options.infinite_wait_time = args.wait_infinite
 
@@ -240,13 +242,19 @@ def main():
     options = parse_cli_args()
     window = draw.TerminalWindow(options.window_width, options.window_height, options)
 
-    if options.infinite:
-        _run_infinite(window, options)
-    else:
-        t = get_tree(window, options)
-        t.draw()
-        window.draw()
+    try:
+        if options.infinite:
+            _run_infinite(window, options)
+        else:
+            t = get_tree(window, options)
+            t.draw()
+            window.draw()
+            window.reset_cursor()
+            
+    except KeyboardInterrupt:
+        print(draw.SHOW_CURSOR, end="")
         window.reset_cursor()
+        print("\rStopped by user\n")
 
 
 if __name__ == "__main__":
