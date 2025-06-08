@@ -35,12 +35,8 @@ This is a fork of [PyBonsai](https://github.com/Ben-Edwards44/PyBonsai) with som
 
 - Simple package installation 📦
 - Better CLI experience 💻
-![installation](Images/demo/install.gif)
 - Infinite mode 🔄
-![infinite](Images/demo/inf_grow.gif)
-![cli](Images/demo/new_grow.gif)
 - Save to text files 📄
-![save](Images/demo/save.gif)
 
 About other features read more on [PyBonsai](https://github.com/Ben-Edwards44/PyBonsai).
 
