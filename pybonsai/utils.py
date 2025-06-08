@@ -1,4 +1,8 @@
 import math
+import time
+from pathlib import Path
+
+from . import tree
 
 class Line:
     #line in form y = mx + c
@@ -63,3 +67,65 @@ class Vector:
 
         self.x /= m
         self.y /= m
+        
+def import_to_txt(tree, filename_path):
+    with open(filename_path, "w") as f:
+        f.write(tree.to_string())
+
+
+def get_tree(window, options):
+    root_x = window.width // 2
+
+    root_y = tree.Tree.BOX_HEIGHT + 4
+    root_y = root_y + root_y % 2  #round to nearest even number (odd numbers cause off-by-one errors as chars are twice as tall as they are wide)
+
+    root_pos = (root_x, root_y)
+
+    if options.type == 0:
+        t = tree.ClassicTree(window, root_pos, options)
+    elif options.type == 1:
+        t = tree.FibonacciTree(window, root_pos, options)
+    elif options.type == 2:
+        t = tree.OffsetFibTree(window, root_pos, options)
+    else:
+        t = tree.RandomOffsetFibTree(window, root_pos, options)
+
+    return t
+
+
+def run_single_tree(window, options):
+    t = get_tree(window, options)
+    t.draw()
+    window.draw()
+    window.reset_cursor()
+
+    if options.save_path:
+        save_path = Path(options.save_path)
+
+        # If only a filename is provided (no directory part), save it in the user's Downloads directory.
+        if save_path.parent == Path('.'):
+            save_path = Path.home() / 'Downloads' / save_path
+
+        # Create parent directories if they don't exist
+        save_path.parent.mkdir(parents=True, exist_ok=True)
+
+        import_to_txt(t, save_path)
+        print(f"\nSaved tree to {save_path}")
+
+
+def run_infinite(window, options):
+    if options.new:
+        while True:
+            window.clear_screen()
+            window.clear_chars()
+            window.reset_cursor()
+            t = get_tree(window, options)
+            t.draw()
+            window.draw()
+            time.sleep(options.infinite_wait_time)
+    else:
+        t = get_tree(window, options)
+        while True:
+            t.draw()
+            window.draw()
+            time.sleep(options.infinite_wait_time)

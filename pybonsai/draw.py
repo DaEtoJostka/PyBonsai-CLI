@@ -2,6 +2,7 @@ import math
 from . import utils
 import random
 from time import sleep
+import re
 
 
 #ANSI escape codes (https://en.wikipedia.org/wiki/ANSI_escape_code)
@@ -25,6 +26,10 @@ class TerminalWindow:
         self.options = options
 
         self.chars = [[TerminalWindow.BACKGROUND_CHAR for _ in range(width)] for _ in range(height)]
+
+    def to_string(self):
+        raw_string = "\n".join("".join(row) for row in self.chars)
+        return re.sub(r'\x1b\[[0-9;]*m', '', raw_string)
 
     colour_char = lambda self, char, r, g, b: f"\033[38;2;{r};{g};{b}m{char}{END_COLOUR}"  #ANSI escape code for 24 bit true colour (which most modern terminals support)
 

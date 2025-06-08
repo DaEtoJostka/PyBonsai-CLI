@@ -28,6 +28,9 @@ class Tree:
 
         self.box_top_width = self.get_box_width()
 
+    def to_string(self):
+        return self.window.to_string()
+
     def get_box_width(self):
         width = min(self.window.width // 3, Tree.MAX_TOP_WIDTH)
 

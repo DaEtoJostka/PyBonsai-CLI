@@ -26,9 +26,10 @@
 
 from . import draw
 from . import tree
+from . import utils
 import argparse
 import sys
-import time
+from pathlib import Path
 
 import random
 from math import radians
@@ -83,6 +84,8 @@ class Options:
 
         self.window_width, self.window_height = self.get_default_window()
 
+        self.save_path = None
+
     def get_default_window(self):
         #ensure the default values fit the current terminal size
         width, height = get_terminal_size()
@@ -123,6 +126,7 @@ def _print_help():
     -l, --layers          number of branch layers: more => more branches [default {Options.NUM_LAYERS}]
     -a, --angle           mean angle of branches to their parent, in degrees; more => more arched trees [default {Options.ANGLE_MEAN}]
 
+    -o, --save PATH       save the tree to a text file. If only a filename is provided, it will be saved in a 'download' directory.
     -f, --fixed-window    do not allow window height to increase when tree grows off screen
     
     -I, --infinite        run in infinite mode, infinitely growing same tree
@@ -131,7 +135,7 @@ def _print_help():
 """
     USAGE = ("usage: pybonsai [-h] [--version] [-s SEED] [-i] [-w WAIT] "
              "[-c BRANCH_CHARS] [-C LEAF_CHARS] [-x WIDTH] [-y HEIGHT] [-t TYPE] "
-             "[-S START_LEN] [-L LEAF_LEN] [-l LAYERS] [-a ANGLE] [-f] "
+             "[-S START_LEN] [-L LEAF_LEN] [-l LAYERS] [-a ANGLE] [-o PATH] [-f] "
              "[-I] [-n] [-W WAIT_INFINITE]")
 
     print()
@@ -167,6 +171,7 @@ def parse_cli_args():
     parser.add_argument('-L', '--leaf-len', type=int, default=options.leaf_len)
     parser.add_argument('-l', '--layers', type=int, default=options.num_layers)
     parser.add_argument('-a', '--angle', type=int, default=Options.ANGLE_MEAN)
+    parser.add_argument('-o', '--save', type=str, metavar='PATH')
     parser.add_argument('-f', '--fixed-window', action='store_true')
     parser.add_argument('-I', '--infinite', action='store_true')
     parser.add_argument('-n', '--new', action='store_true')
@@ -185,6 +190,7 @@ def parse_cli_args():
     options.leaf_len = args.leaf_len
     options.num_layers = args.layers
     options.angle_mean = radians(args.angle)
+    options.save_path = args.save
     options.fixed_window = args.fixed_window
     options.infinite = args.infinite or args.new
     options.new = args.new
@@ -200,56 +206,15 @@ def parse_cli_args():
     return options
 
 
-def get_tree(window, options):
-    root_x = window.width // 2
-
-    root_y = tree.Tree.BOX_HEIGHT + 4
-    root_y = root_y + root_y % 2  #round to nearest even number (odd numbers cause off-by-one errors as chars are twice as tall as they are wide)
-
-    root_pos = (root_x, root_y)
-
-    if options.type == 0:
-        t = tree.ClassicTree(window, root_pos, options)
-    elif options.type == 1:
-        t = tree.FibonacciTree(window, root_pos, options)
-    elif options.type == 2:
-        t = tree.OffsetFibTree(window, root_pos, options)
-    else:
-        t = tree.RandomOffsetFibTree(window, root_pos, options)
-
-    return t
-
-
-def _run_infinite(window, options):
-    if options.new:
-        while True:
-            window.clear_screen()
-            window.clear_chars()
-            window.reset_cursor()
-            t = get_tree(window, options)
-            t.draw()
-            window.draw()
-            time.sleep(options.infinite_wait_time)
-    else:
-        t = get_tree(window, options)
-        while True:
-            t.draw()
-            window.draw()
-            time.sleep(options.infinite_wait_time)
-
-
 def main():
     options = parse_cli_args()
     window = draw.TerminalWindow(options.window_width, options.window_height, options)
 
     try:
         if options.infinite:
-            _run_infinite(window, options)
+            utils.run_infinite(window, options)
         else:
-            t = get_tree(window, options)
-            t.draw()
-            window.draw()
-            window.reset_cursor()
+            utils.run_single_tree(window, options)
             
     except KeyboardInterrupt:
         print(draw.SHOW_CURSOR, end="")
