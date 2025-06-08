@@ -1,5 +1,5 @@
 [project]
-name = "PyBonsai-Plus"
+name = "pybonsai"
 version = "1.2.0"
 description = "PyBonsai+ procedurally generates ASCII art bonsai trees in your terminal."
 license = {text = "MIT"}

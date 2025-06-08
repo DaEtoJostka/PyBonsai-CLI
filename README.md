@@ -33,12 +33,16 @@ PyBonsai+ is a Python script that generates procedural ASCII art trees in the co
 
 This is a fork of [PyBonsai](https://github.com/Ben-Edwards44/PyBonsai) with some additional features.
 
-- Simple package installation
-- Better CLI experience
-- Infinite mode
-- Save to text files
+- Simple package installation 📦
+- Better CLI experience 💻
+![installation](Images/demo/install.gif)
+- Infinite mode 🔄
+![infinite](Images/demo/inf_grow.gif)
+![cli](Images/demo/new_grow.gif)
+- Save to text files 📄
+![save](Images/demo/save.gif)
 
-About other features read more in [PyBonsai](https://github.com/Ben-Edwards44/PyBonsai).
+About other features read more on [PyBonsai](https://github.com/Ben-Edwards44/PyBonsai).
 
 ## Installation 🔗
 
@@ -71,8 +75,8 @@ pip install pybonsai
 or build from source:
 
 ```
-git clone https://github.com/Ben-Edwards44/PyBonsai.git
-cd PyBonsai
+git clone https://github.com/DaEtoJostka/PyBonsai-plus.git
+cd PyBonsai-plus
 pip install .
 ```
 
@@ -116,3 +120,17 @@ OPTIONS:
     -n, --new             run in infinite mode, automatically growing new trees
     -W, --wait-infinite   time delay between drawing in infinite mode [default 5]
 ```
+
+Other options usage examples see [examples.md](https://github.com/DaEtoJostka/PyBonsai-plus/blob/main/examples.md)
+
+## Like it?
+
+If you like this project, please consider giving it a ⭐️ on [GitHub](https://github.com/DaEtoJostka/PyBonsai-plus)
+
+Also don't forget to check out [PyBonsai](https://github.com/Ben-Edwards44/PyBonsai)
+## Contributing
+
+If you want to contribute to this project, please feel free to submit a pull request.
+
+## License
+[MIT license](https://github.com/DaEtoJostka/PyBonsai-plus/blob/main/LICENSE)
