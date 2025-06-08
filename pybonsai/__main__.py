@@ -54,10 +54,13 @@ class Options:
     
     BRANCH_CHARS = "~;:="
     LEAF_CHARS = "&%#@"
+    
+    FIXED = False
 
     WINDOW_WIDTH = 80
     WINDOW_HEIGHT = 25
 
+    INFINITE_WAIT_TIME = 5
     def __init__(self):
         #set the default values
         self.num_layers = Options.NUM_LAYERS
