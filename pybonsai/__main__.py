@@ -126,7 +126,7 @@ def _print_help():
     -l, --layers          number of branch layers: more => more branches [default {Options.NUM_LAYERS}]
     -a, --angle           mean angle of branches to their parent, in degrees; more => more arched trees [default {Options.ANGLE_MEAN}]
 
-    -o, --save PATH       save the tree to a text file. If only a filename is provided, it will be saved in a 'download' directory.
+    -o, --save PATH       save the tree to a text file. If only a filename is provided, it will be saved in a user's Downloads directory.
     -f, --fixed-window    do not allow window height to increase when tree grows off screen
     
     -I, --infinite        run in infinite mode, infinitely growing same tree

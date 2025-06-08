@@ -1,6 +1,33 @@
 # PyBonsai➕ 🌴
 
 PyBonsai+ is a Python script that generates procedural ASCII art trees in the comfort of your terminal.
+<pre style="background-color: #2d3142; color: #d4d4d4; font-family: monospace; line-height: 1.2; font-size: 14px; padding: 1em;">
+                                                        <span style="color: #b5cea8;">#</span>
+                                                    <span style="color: #b5cea8;">@</span><span style="color: #6a9955;">%%&amp;#@&amp;</span>
+                                    <span style="color: #b5cea8;">##</span><span style="color: #808080;">%</span>              <span style="color: #dcdcaa;">\</span><span style="color: #6a9955;">&amp;</span><span style="color: #b5cea8;">%#</span><span style="color: #6a9955;">%&amp;</span><span style="color: #b5cea8;">#</span><span style="color: #6a9955;">%%</span><span style="color: #b5cea8;">#@</span>
+                       <span style="color: #b5cea8;">#</span><span style="color: #6a9955;">%</span><span style="color: #b5cea8;">@&amp;@</span><span style="color: #b5cea8;">#</span>    <span style="color: #b5cea8;">@</span><span style="color: #6a9955;">%&amp;&amp;</span><span style="color: #dcdcaa;">:</span><span style="color: #6a9955;">&amp;%%</span><span style="color: #b5cea8;">#&amp;</span>         <span style="color: #6a9955;">&amp;</span><span style="color: #b5cea8;">#@</span><span style="color: #dcdcaa;">_/</span><span style="color: #6a9955;">&amp;&amp;</span><span style="color: #b5cea8;">#@#</span> <span style="color: #6a9955;">&amp;</span>
+                         <span style="color: #6a9955;">&amp;</span><span style="color: #b5cea8;">@@</span><span style="color: #6a9955;">%</span><span style="color: #b5cea8;">@&amp;</span>  <span style="color: #6a9955;">&amp;</span><span style="color: #b5cea8;">@&amp;&amp;@@</span><span style="color: #6a9955;">%&amp;</span><span style="color: #b5cea8;">@@</span><span style="color: #6a9955;">%</span>        <span style="color: #808080;">%#</span> <span style="color: #b5cea8;">@@@@#@&amp;</span>
+                  <span style="color: #6a9955;">@%</span>  <span style="color: #b5cea8;">#%#%@@@%</span>  <span style="color: #b5cea8;">@</span><span style="color: #6a9955;">%#&amp;@@&amp;##@@@#</span>          <span style="color: #dcdcaa;">|</span><span style="color: #808080;">%</span> <span style="color: #6a9955;">&amp;&amp;@</span>
+             <span style="color: #6a9955;">%%#&amp;%@#</span>  <span style="color: #b5cea8;">@#</span><span style="color: #dcdcaa;">~</span><span style="color: #6a9955;">%&amp;%%#%</span>   <span style="color: #b5cea8;">@</span><span style="color: #6a9955;">%%&amp;@&amp;#</span> <span style="color: #6a9955;">%%#</span>          <span style="color: #dcdcaa;">|</span>
+            <span style="color: #6a9955;">%#&amp;&amp;</span>      <span style="color: #b5cea8;">@@</span><span style="color: #6a9955;">%%%#&amp;@&amp;%@</span> <span style="color: #6a9955;">%%</span><span style="color: #dcdcaa;">|</span><span style="color: #b5cea8;">%###</span><span style="color: #6a9955;">&amp;%_=\</span> <span style="color: #6a9955;">%&amp;</span>       <span style="color: #dcdcaa;">|</span>
+              <span style="color: #b5cea8;">#@</span><span style="color: #dcdcaa;">|</span> <span style="color: #6a9955;">&amp;%</span> <span style="color: #6a9955;">&amp;</span><span style="color: #b5cea8;">@% @#</span> <span style="color: #6a9955;">%#</span> <span style="color: #6a9955;">&amp;</span> <span style="color: #6a9955;">&amp;%#</span><span style="color: #dcdcaa;">|</span><span style="color: #b5cea8;">@</span>  <span style="color: #b5cea8;">@@</span> <span style="color: #6a9955;">&amp;&amp;@%&amp;&amp;&amp;</span>      <span style="color: #dcdcaa;">; =__=</span>
+              <span style="color: #6a9955;">&amp;@###_#@</span>  <span style="color: #b5cea8;">#</span>   <span style="color: #b5cea8;">@</span> <span style="color: #6a9955;">&amp;</span> <span style="color: #b5cea8;">@&amp;</span><span style="color: #dcdcaa;">/</span><span style="color: #b5cea8;">#</span> <span style="color: #b5cea8;">@</span>     <span style="color: #b5cea8;">#</span><span style="color: #6a9955;">%@%&amp;@%@</span>    <span style="color: #dcdcaa;">__~</span><span style="color: #b5cea8;">#@@</span> <span style="color: #6a9955;">%#&amp;@%%##&amp;&amp;</span>
+          <span style="color: #6a9955;">&amp;#</span>  <span style="color: #6a9955;">%##%</span><span style="color: #dcdcaa;">_</span><span style="color: #b5cea8;">%</span><span style="color: #6a9955;">##</span><span style="color: #dcdcaa;">%;</span>        <span style="color: #6a9955;">&amp;</span> <span style="color: #dcdcaa;">~</span> <span style="color: #6a9955;">%</span>     <span style="color: #6a9955;">%@##%</span> <span style="color: #b5cea8;">@</span>  <span style="color: #b5cea8;">@</span> <span style="color: #6a9955;">&amp;@&amp;&amp;@</span>  <span style="color: #b5cea8;">#</span>  <span style="color: #b5cea8;">@</span><span style="color: #6a9955;">%#@&amp;#@</span>
+        <span style="color: #6a9955;">%##&amp;%&amp;#@@</span><span style="color: #dcdcaa;">\</span>  <span style="color: #6a9955;">%##</span> <span style="color: #dcdcaa;">~\</span>        <span style="color: #dcdcaa;">|</span>        <span style="color: #6a9955;">&amp;@</span>  <span style="color: #6a9955;">&amp;</span> <span style="color: #dcdcaa;">_____</span> <span style="color: #dcdcaa;">_</span><span style="color: #dcdcaa;">|</span><span style="color: #b5cea8;">#&amp;&amp;&amp;@#@@##@</span> <span style="color: #b5cea8;">#</span>
+         <span style="color: #b5cea8;">@</span><span style="color: #6a9955;">%&amp;#@@#@#</span><span style="color: #dcdcaa;">\/_#_///___;_=_=\:</span>   <span style="color: #6a9955;">%&amp;</span>     <span style="color: #dcdcaa;">/:</span>        <span style="color: #dcdcaa;">~</span> <span style="color: #6a9955;">&amp;##%#&amp;%%#&amp;&amp;</span>
+        <span style="color: #b5cea8;">@</span><span style="color: #6a9955;">%&amp;@@%%@%@#&amp;&amp;%</span><span style="color: #dcdcaa;">~/_</span>          <span style="color: #dcdcaa;">\:~\</span>  <span style="color: #b5cea8;">@</span>    <span style="color: #dcdcaa;">/:</span>          <span style="color: #dcdcaa;">||</span><span style="color: #b5cea8;">#@#&amp;&amp;</span> <span style="color: #b5cea8;">@</span>
+          <span style="color: #b5cea8;">@@@@#&amp;%&amp;&amp;#&amp;@#&amp;</span>             <span style="color: #dcdcaa;">==\</span><span style="color: #b5cea8;">@&amp;%@</span> <span style="color: #dcdcaa;">//</span>         <span style="color: #6a9955;">&amp;%%</span> <span style="color: #6a9955;">%</span><span style="color: #b5cea8;">@#</span> <span style="color: #6a9955;">%</span>
+          <span style="color: #b5cea8;">######</span><span style="color: #6a9955;">%#%</span><span style="color: #b5cea8;">##</span><span style="color: #6a9955;">%</span><span style="color: #b5cea8;">#</span> <span style="color: #b5cea8;">@</span>              <span style="color: #6a9955;">%</span><span style="color: #dcdcaa;">\\</span><span style="color: #b5cea8;">###</span><span style="color: #6a9955;">&amp;</span>         <span style="color: #6a9955;">&amp;%&amp;@#</span>   <span style="color: #b5cea8;">#</span>
+            <span style="color: #b5cea8;">@</span> <span style="color: #6a9955;">%%%%#</span>                    <span style="color: #b5cea8;">@</span> <span style="color: #dcdcaa;">\=#:</span>       <span style="color: #6a9955;">%#@#</span><span style="color: #dcdcaa;">=</span><span style="color: #b5cea8;">@@#@</span>
+             <span style="color: #b5cea8;">@</span>   <span style="color: #6a9955;">%#</span>                       <span style="color: #dcdcaa;">|:|</span>       <span style="color: #6a9955;">&amp;#</span> <span style="color: #6a9955;">&amp;%&amp;%&amp;</span>
+                  <span style="color: #b5cea8;">#</span>                        <span style="color: #dcdcaa;">|||</span>        <span style="color: #b5cea8;">#</span>   <span style="color: #6a9955;">%#&amp;</span>
+                                           <span style="color: #dcdcaa;">;;;</span>
+                                            <span style="color: #dcdcaa;">::|</span>
+                              <span style="color: #d4d4d4;">\</span><span style="color: #6a9955;">.--.__.-._..</span><span style="color: #dcdcaa;">/</span><span style="color: #dcdcaa;">:</span><span style="color: #dcdcaa;">||\..</span><span style="color: #d4d4d4;">__________/</span>
+                               <span style="color: #d4d4d4;">\</span>             <span style="color: #dcdcaa;">~</span>  <span style="color: #dcdcaa;">*.</span>     <span style="color: #b5cea8;">*</span>   <span style="color: #d4d4d4;">/</span>
+                                <span style="color: #d4d4d4;">\_________________________</span> <span style="color: #d4d4d4;">/</span>
+                                  <span style="color: #d4d4d4;">‾</span>                     <span style="color: #d4d4d4;">‾</span>
+</pre>
 
 ## Features 🌱
 
@@ -9,6 +36,7 @@ This is a fork of [PyBonsai](https://github.com/Ben-Edwards44/PyBonsai) with som
 - Simple package installation
 - Better CLI experience
 - Infinite mode
+- Save to text files
 
 About other features read more in [PyBonsai](https://github.com/Ben-Edwards44/PyBonsai).
 
@@ -81,30 +109,10 @@ OPTIONS:
     -l, --layers          number of branch layers: more => more branches [default 8]
     -a, --angle           mean angle of branches to their parent, in degrees; more => more arched trees [default 40]
 
+    -o, --save PATH       save the tree to a text file. If only a filename is provided, it will be saved in a user's Downloads directory.
     -f, --fixed-window    do not allow window height to increase when tree grows off screen
     
     -I, --infinite        run in infinite mode, infinitely growing same tree
     -n, --new             run in infinite mode, automatically growing new trees
     -W, --wait-infinite   time delay between drawing in infinite mode [default 5]
 ```
-
-The following images demonstrate the use of the different options:
-
-| Effect               | Image                                              |
-| -------------------- | -------------------------------------------------- |
-| Big tree             | ![big tree](/Images/options/big.png)               |
-| Different characters | ![different characters](/Images/options/chars.png) |
-| Longer leaves        | ![longer leaves](/Images/options/leafy.png)        |
-
-## Tree Types :leaves:
-
-PyBonsai supports 4 different tree types. Unless specified with the `--type` option, the tree type will be chosen at random.
-
-All tree types are generated recursively and are, essentially, variations on [this](https://www.youtube.com/watch?v=0jjeOYMjmDU) basic fractal tree.
-
-| Type             | Image                                       | Description                                                                                                              |
-| ---------------- | ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| Classic          | ![classic](/Images/types/classic.png)       | The number of child branches is normally distributed with $\mu = 2$ and $\sigma = 0.5$.                                  |
-| Fibonacci        | ![fib](/Images/types/fib.png)               | The number of branches on the $n^{th}$ layer is the $n^{th}$ fibonacci number.                                           |
-| Offset fibonacci | ![offset fib](/Images/types/offset_fib.png) | Similar to above, except child branches grow in the middle of the parent as well as the end.                             |
-| Random fibonacci | ![random fib](/Images/types/rand_fib.png)   | Similar to above, except child branches grow at random positions on the parent and leaves can grow in the middle layers. |
