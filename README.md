@@ -33,6 +33,8 @@ PyBonsai+ is a Python script that generates procedural ASCII art trees in the co
 
 This is a fork of [PyBonsai](https://github.com/Ben-Edwards44/PyBonsai) with some additional features.
 
+<img src="Images/demo.gif" align="right" width="450px">
+
 - Simple package installation 📦
 - Better CLI experience 💻
 - Infinite mode 🔄
