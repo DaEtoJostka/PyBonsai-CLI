@@ -49,6 +49,9 @@ class TerminalWindow:
     def clear_chars(self):
         self.chars = [[TerminalWindow.BACKGROUND_CHAR for _ in range(self.width)] for _ in range(self.height)]
 
+    def clear_screen(self):
+        print("\033[2J", end="")
+
     def draw(self):
         print(HIDE_CURSOR, end="")
 
@@ -63,7 +66,7 @@ class TerminalWindow:
     def reset_cursor(self):
         #cursor will have been left at the top from drawing, so we need to place it back at the bottom
         print(f"\033[{self.height}B", end="")
-
+      
     def plane_to_screen(self, x, y):
         #convert cartesian coords to array indices
         scaled_x = x / TerminalWindow.CHAR_WIDTH

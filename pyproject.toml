@@ -1,11 +1,11 @@
 [project]
-name = "pybonsai"
-version = "1.0.0"
-description = "A project that generates ASCII art trees in your terminal."
+name = "PyBonsai-Plus"
+version = "1.2.0"
+description = "PyBonsai+ procedurally generates ASCII art bonsai trees in your terminal."
 license = {text = "MIT"}
 readme = "README.md"
 requires-python = ">=3.9"
-keywords = ["pybonsai"]
+keywords = ["bonsai", "ascii", "tree", "cli", "terminal", "pybonsai"]
 authors = [
     {name = "Ivan Karlov", email = "karlovivan679@gmail.com"}
 ]
@@ -21,7 +21,7 @@ classifiers = [
 pybonsai = "pybonsai.__main__:main"
 
 [project.urls]
-"Source" = "https://github.com/DaEtoJostka/PyBonsai"
+"Homepage" = "https://github.com/DaEtoJostka/PyBonsai"
 "Original" = "https://github.com/Ben-Edwards44/PyBonsai"
 
 [build-system]

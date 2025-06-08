@@ -1,5 +1,5 @@
 import math
-import utils
+from . import utils
 import random
 
 

@@ -28,14 +28,15 @@ from . import draw
 from . import tree
 import argparse
 import sys
+import time
 
 import random
 from math import radians
 from os import get_terminal_size
 
 
-VERSION = "1.2.2"
-DESC = "PyBonsai procedurally generates ASCII art trees in your terminal."
+VERSION = "1.2.0"
+DESC = "PyBonsai+ procedurally generates ASCII art bonsai trees in your terminal."
 
 
 class Options:
@@ -50,14 +51,12 @@ class Options:
 
     INSTANT = False
     WAIT_TIME = 0
-
+    
     BRANCH_CHARS = "~;:="
     LEAF_CHARS = "&%#@"
 
     WINDOW_WIDTH = 80
     WINDOW_HEIGHT = 25
-
-    FIXED = False
 
     def __init__(self):
         #set the default values
@@ -69,13 +68,13 @@ class Options:
 
         self.instant = Options.INSTANT
         self.wait_time = Options.WAIT_TIME
+        self.infinite_wait_time = Options.INFINITE_WAIT_TIME
 
         self.branch_chars = Options.BRANCH_CHARS
         self.leaf_chars = Options.LEAF_CHARS
 
         self.user_set_type = False
         self.type = random.randint(0, 3)
-        self.fractal_mode = False
 
         self.fixed_window = Options.FIXED
 
@@ -122,11 +121,15 @@ def _print_help():
     -a, --angle           mean angle of branches to their parent, in degrees; more => more arched trees [default {Options.ANGLE_MEAN}]
 
     -f, --fixed-window    do not allow window height to increase when tree grows off screen
-"""
-    usage = "usage: pybonsai [-h] [--version] [-s SEED] [-i] [-w WAIT] [-c BRANCH_CHARS]\n" \
-            "                  [-C LEAF_CHARS] [-x WIDTH] [-y HEIGHT] [-t {{0,1,2,3}}]\n" \
-            "                  [-S START_LEN] [-L LEAF_LEN] [-l LAYERS] [-a ANGLE] [-f]"
     
+    -I, --infinite        run in infinite mode, infinitely growing same tree
+    -n, --new             run in infinite mode, automatically growing new trees
+    -W, --wait-infinite   time delay between drawing new trees in infinite mode [default {Options.INFINITE_WAIT_TIME}]
+"""
+    usage = "usage: pybonsai [-h] [--version] [-s SEED] [-i] [-w WAIT] [-W WAIT_INFINITE] \
+[-I] [-n] [-c BRANCH_CHARS] [-C LEAF_CHARS] [-x WIDTH] [-y HEIGHT] [-t {{0,1,2,3}}] \
+[-S START_LEN] [-L LEAF_LEN] [-l LAYERS] [-a ANGLE] [-f]"
+
     print(usage)
     print()
     print(DESC)
@@ -144,10 +147,9 @@ def parse_cli_args():
 
     parser = argparse.ArgumentParser(
         description=DESC,
-        epilog = "Based on PyBonsai by Ben Edwards.",
         add_help=False
     )
-    parser.add_argument('--version', action='version', version=f'PyBonsai version {VERSION}')
+    parser.add_argument('--version', action='version', version=f'PyBonsai+ version {VERSION}')
     parser.add_argument('-s', '--seed', type=int)
     parser.add_argument('-i', '--instant', action='store_true')
     parser.add_argument('-w', '--wait', type=float, default=options.wait_time)
@@ -161,6 +163,9 @@ def parse_cli_args():
     parser.add_argument('-l', '--layers', type=int, default=options.num_layers)
     parser.add_argument('-a', '--angle', type=int, default=Options.ANGLE_MEAN)
     parser.add_argument('-f', '--fixed-window', action='store_true')
+    parser.add_argument('-I', '--infinite', action='store_true')
+    parser.add_argument('-n', '--new', action='store_true')
+    parser.add_argument('-W', '--wait-infinite', type=float, default=options.infinite_wait_time)
 
     args = parser.parse_args()
 
@@ -176,6 +181,9 @@ def parse_cli_args():
     options.num_layers = args.layers
     options.angle_mean = radians(args.angle)
     options.fixed_window = args.fixed_window
+    options.infinite = args.infinite
+    options.new = args.new
+    options.infinite_wait_time = args.wait_infinite
 
     if args.seed is not None:
         options.set_seed(args.seed)
@@ -207,15 +215,35 @@ def get_tree(window, options):
     return t
 
 
+def _run_infinite(window, options):
+    if options.new:
+        while True:
+            window.clear_screen()
+            window.clear_chars()
+            window.reset_cursor()
+            t = get_tree(window, options)
+            t.draw()
+            window.draw()
+            time.sleep(options.infinite_wait_time)
+    else:
+        t = get_tree(window, options)
+        while True:
+            t.draw()
+            window.draw()
+            time.sleep(options.infinite_wait_time)
+
+
 def main():
     options = parse_cli_args()
     window = draw.TerminalWindow(options.window_width, options.window_height, options)
 
-    t = get_tree(window, options)
-
-    t.draw()
-    window.draw()
-    window.reset_cursor()
+    if options.infinite:
+        _run_infinite(window, options)
+    else:
+        t = get_tree(window, options)
+        t.draw()
+        window.draw()
+        window.reset_cursor()
 
 
 if __name__ == "__main__":

@@ -1,6 +1,5 @@
 import math
 
-
 class Line:
     #line in form y = mx + c
     def __init__(self):
