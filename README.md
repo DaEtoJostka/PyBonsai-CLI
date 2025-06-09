@@ -1,6 +1,6 @@
-# PyBonsai➕ 🌴
+# PyBonsai-CLI 🌴
 
-PyBonsai+ is a Python script that generates procedural ASCII art trees in the comfort of your terminal.
+PyBonsai is a Python script that generates procedural ASCII art trees in the comfort of your terminal.
 <pre style="background-color: #2d3142; color: #d4d4d4; font-family: monospace; line-height: 1.2; font-size: 14px; padding: 1em;">
                                                         <span style="color: #b5cea8;">#</span>
                                                     <span style="color: #b5cea8;">@</span><span style="color: #6a9955;">%%&amp;#@&amp;</span>
@@ -72,8 +72,8 @@ pip install pybonsai
 or build from source:
 
 ```
-git clone https://github.com/DaEtoJostka/PyBonsai-plus.git
-cd PyBonsai-plus
+git clone https://github.com/DaEtoJostka/PyBonsai-CLI.git
+cd PyBonsai-CLI
 pip install .
 ```
 
@@ -118,11 +118,11 @@ OPTIONS:
     -W, --wait-infinite   time delay between drawing in infinite mode [default 5]
 ```
 
-Other options usage examples see [examples.md](https://github.com/DaEtoJostka/PyBonsai-plus/blob/main/examples.md)
+Other options usage examples see [examples.md](https://github.com/DaEtoJostka/PyBonsai-CLI/blob/main/examples.md)
 
 ## Like it?
 
-If you like this project, please consider giving it a ⭐️ on [GitHub](https://github.com/DaEtoJostka/PyBonsai-plus)
+If you like this project, please consider giving it a ⭐️ on [GitHub](https://github.com/DaEtoJostka/PyBonsai-CLI)
 
 Also don't forget to check out [PyBonsai](https://github.com/Ben-Edwards44/PyBonsai)
 ## Contributing
@@ -130,4 +130,4 @@ Also don't forget to check out [PyBonsai](https://github.com/Ben-Edwards44/PyBon
 If you want to contribute to this project, please feel free to submit a pull request.
 
 ## License
-[MIT license](https://github.com/DaEtoJostka/PyBonsai-plus/blob/main/LICENSE)
+[MIT license](https://github.com/DaEtoJostka/PyBonsai-CLI/blob/main/LICENSE)

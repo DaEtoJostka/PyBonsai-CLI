@@ -1,7 +1,7 @@
 [project]
 name = "pybonsai"
-version = "1.2.1"
-description = "PyBonsai+ procedurally generates ASCII art bonsai trees in your terminal."
+version = "1.2.4"
+description = "PyBonsai procedurally generates ASCII art bonsai trees in your terminal."
 license = {text = "MIT"}
 readme = "README.md"
 requires-python = ">=3.9"
@@ -21,7 +21,7 @@ classifiers = [
 pybonsai = "pybonsai.__main__:main"
 
 [project.urls]
-"Homepage" = "https://github.com/DaEtoJostka/PyBonsai"
+"Homepage" = "https://github.com/DaEtoJostka/PyBonsai-CLI"
 "Original" = "https://github.com/Ben-Edwards44/PyBonsai"
 
 [build-system]
