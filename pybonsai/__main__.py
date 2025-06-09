@@ -158,7 +158,7 @@ def parse_cli_args():
         description=DESC,
         add_help=False
     )
-    parser.add_argument('--version', action='version', version=f'PyBonsai+ version {VERSION}')
+    parser.add_argument('--version', action='version', version=f'PyBonsai version {VERSION}')
     parser.add_argument('-s', '--seed', type=int)
     parser.add_argument('-i', '--instant', action='store_true')
     parser.add_argument('-w', '--wait', type=float, default=options.wait_time)
