@@ -54,7 +54,8 @@ class Vector:
         self.x = x
         self.y = y
 
-    mag = lambda self: (self.x**2 + self.y**2)**0.5
+    def mag(self):
+        return (self.x**2 + self.y**2)**0.5
 
     def __iadd__(self, other_vec):
         return Vector(self.x + other_vec.x, self.y + other_vec.y)

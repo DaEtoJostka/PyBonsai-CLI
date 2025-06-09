@@ -25,11 +25,9 @@
 
 
 from . import draw
-from . import tree
 from . import utils
 import argparse
 import sys
-from pathlib import Path
 
 import random
 from math import radians

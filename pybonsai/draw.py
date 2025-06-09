@@ -31,7 +31,8 @@ class TerminalWindow:
         raw_string = "\n".join("".join(row) for row in self.chars)
         return re.sub(r'\x1b\[[0-9;]*m', '', raw_string)
 
-    colour_char = lambda self, char, r, g, b: f"\033[38;2;{r};{g};{b}m{char}{END_COLOUR}"  #ANSI escape code for 24 bit true colour (which most modern terminals support)
+    def colour_char(self, char, r, g, b):
+        return f"\033[38;2;{r};{g};{b}m{char}{END_COLOUR}"
 
     def extract_colour(self, coloured_char):
         #get the rgb colour from an ANSI coloured character
@@ -143,7 +144,7 @@ class TerminalWindow:
             return "\\"
         
     def choose_colour(self, colour):
-        if type(colour[0]) == int:
+        if isinstance(colour[0], int):
             #the colour is not a range, so no choice must be made
             return colour
         elif len(colour[0]) == 2:
