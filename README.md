@@ -48,7 +48,7 @@ About other features read more on [PyBonsai](https://github.com/Ben-Edwards44/Py
 
 ### Recommended 
 
-Use [pipx](https://pipx.pypa.io/stable/installation/) to install PyBonsai+ globally.
+Use [pipx](https://pipx.pypa.io/stable/installation/) to install PyBonsai globally.
 
 ```
 pipx install pybonsai
