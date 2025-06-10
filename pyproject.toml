@@ -1,6 +1,6 @@
 [project]
 name = "pybonsai"
-version = "1.2.6"
+version = "1.2.7"
 description = "PyBonsai procedurally generates ASCII art bonsai trees in your terminal."
 license = {text = "MIT"}
 readme = "README-pypi.md"
@@ -28,6 +28,8 @@ pybonsai = "pybonsai.__main__:main"
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
+[tool.hatch.build]
+exclude = ["Images/"]
+
 [tool.hatch.build.targets.wheel]
 packages = ["pybonsai"]
-exclude = ["/Images"]
