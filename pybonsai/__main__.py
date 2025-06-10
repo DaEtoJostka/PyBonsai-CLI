@@ -34,7 +34,7 @@ from math import radians
 from os import get_terminal_size
 
 
-VERSION = "1.2.5"
+VERSION = "1.2.6"
 DESC = "PyBonsai procedurally generates ASCII art bonsai trees in your terminal."
 
 
