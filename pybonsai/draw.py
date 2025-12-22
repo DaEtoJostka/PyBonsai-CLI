@@ -28,6 +28,86 @@ class TerminalWindow:
         self.options = options
 
         self.chars = [[TerminalWindow.BACKGROUND_CHAR for _ in range(width)] for _ in range(height)]
+        self.leaf_points = []  # Stores (x, y, char, colour) for canopy leaves
+
+    def register_leaf_point(self, x, y, char, colour):
+        self.leaf_points.append((x, y, char, colour))
+
+    def animate_leaves_falling(self):
+        import copy
+        
+        if not self.leaf_points:
+            return
+        
+        # Store static tree (without falling leaves overlay)
+        static_tree = copy.deepcopy(self.chars)
+        
+        # Falling leaves: each is {'x', 'y', 'char', 'colour', 'vx', 'vy'}
+        falling = []
+        
+        gravity = 0.15 * self.options.fall_speed  # Scale gravity by speed
+        drag = 0.98
+        frame_delay = max(0.02, 0.1 / self.options.fall_speed)  # Higher speed = shorter delay
+        
+        sys.stdout.write(HIDE_CURSOR)
+        
+        try:
+            while True:
+                # Spawn new leaves based on intensity
+                spawn_count = max(1, self.options.intensity // 2)
+                for _ in range(spawn_count):
+                    if self.leaf_points:
+                        src = random.choice(self.leaf_points)
+                        falling.append({
+                            'x': src[0],
+                            'y': src[1],
+                            'char': random.choice(self.options.leaf_chars),
+                            'colour': self.choose_colour(self.options.leaf_colour),
+                            'vx': random.uniform(-0.3, 0.3),
+                            'vy': 0
+                        })
+                
+                # Reset to static tree
+                for r in range(self.height):
+                    self.chars[r] = list(static_tree[r])
+                
+                # Update and draw falling leaves
+                still_active = []
+                for leaf in falling:
+                    # Physics
+                    leaf['vy'] -= gravity
+                    leaf['vx'] *= drag
+                    leaf['vx'] += random.uniform(-0.02, 0.02)
+                    
+                    leaf['x'] += leaf['vx']
+                    leaf['y'] += leaf['vy']
+                    
+                    # Flip character occasionally
+                    if random.random() < 0.1:
+                        leaf['char'] = random.choice(self.options.leaf_chars)
+                    
+                    # Check bounds
+                    sx, sy = self.plane_to_screen(leaf['x'], leaf['y'])
+                    
+                    if 0 <= sx < self.height and 0 <= sy < self.width:
+                        coloured = self.colour_char(leaf['char'], leaf['colour'][0], leaf['colour'][1], leaf['colour'][2])
+                        self.chars[sx][sy] = coloured
+                        still_active.append(leaf)
+                    elif leaf['y'] > 0:
+                        # Still falling, just off-screen horizontally
+                        still_active.append(leaf)
+                
+                falling = still_active
+                
+                self.draw()
+                sleep(frame_delay)
+
+        except KeyboardInterrupt:
+            pass
+        finally:
+            sys.stdout.write(SHOW_CURSOR)
+            sys.stdout.flush()
+            self.reset_cursor()
 
     def to_string(self):
         raw_string = "\n".join("".join(row) for row in self.chars)

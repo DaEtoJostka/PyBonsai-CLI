@@ -380,6 +380,9 @@ class Leaves:
                 else:
                     self.window.set_char_wait(pos.x, pos.y, char, colour, False, self.options.wait_time)
 
+                if self.options.leaves_falling:
+                    self.window.register_leaf_point(pos.x, pos.y, char, colour)
+
                 #make the leaves droop downwards by adding some gravity force
                 weight = i / self.options.leaf_len
                 vel += g * weight

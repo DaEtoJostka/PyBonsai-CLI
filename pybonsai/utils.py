@@ -130,3 +130,10 @@ def run_infinite(window, options):
             t.draw()
             window.draw()
             time.sleep(options.infinite_wait_time)
+
+
+def run_leaves_falling(window, options):
+    t = get_tree(window, options)
+    t.draw()
+    window.draw()
+    window.animate_leaves_falling()

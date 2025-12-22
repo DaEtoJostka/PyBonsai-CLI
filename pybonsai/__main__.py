@@ -61,6 +61,11 @@ class Options:
     WINDOW_HEIGHT = 25
 
     INFINITE_WAIT_TIME = 5
+
+    LEAVES_FALLING = False
+    INTENSITY = 5
+    FALL_SPEED = 0.5
+
     def __init__(self):
         #set the default values
         self.num_layers = Options.NUM_LAYERS
@@ -89,6 +94,10 @@ class Options:
         self.window_width, self.window_height = self.get_default_window()
 
         self.save_path = None
+
+        self.leaves_falling = Options.LEAVES_FALLING
+        self.intensity = Options.INTENSITY
+        self.fall_speed = Options.FALL_SPEED
 
     def get_default_window(self):
         #ensure the default values fit the current terminal size
@@ -142,12 +151,18 @@ def _print_help():
     --branch-color        custom color for branches (e.g. "red", "#553311", "100,60,30")
     --leaf-color          custom color for leaves
     --soil-color          custom color for soil
+
+    --leaves-falling      animate leaves falling from the tree continuously
+    --intensity           intensity of falling leaves [1-10, default {Options.INTENSITY}]
+    --fall-speed          speed of falling animation [default {Options.FALL_SPEED}]
 """
     USAGE = ("usage: pybonsai [-h] [--version] [-s SEED] [-i] [-w WAIT] "
              "[-c BRANCH_CHARS] [-C LEAF_CHARS] [-x WIDTH] [-y HEIGHT] [-t TYPE] [-b] "
              "[-S START_LEN] [-L LEAF_LEN] [-l LAYERS] [-a ANGLE] [-o PATH] [-f] "
              "[-I] [-n] [-W WAIT_INFINITE] [--preset PRESET] [--branch-color COLOR] "
-             "[--leaf-color COLOR] [--soil-color COLOR]")
+             "[-I] [-n] [-W WAIT_INFINITE] [--preset PRESET] [--branch-color COLOR] "
+             "[--leaf-color COLOR] [--soil-color COLOR] [--leaves-falling] "
+             "[--intensity N] [--fall-speed S]")
 
     print()
     print(DESC)
@@ -194,6 +209,10 @@ def parse_cli_args():
     parser.add_argument('--leaf-color', type=str)
     parser.add_argument('--soil-color', type=str)
 
+    parser.add_argument('--leaves-falling', action='store_true')
+    parser.add_argument('--intensity', type=int, default=options.intensity)
+    parser.add_argument('--fall-speed', type=float, default=options.fall_speed)
+
     args = parser.parse_args()
 
     # Update options with parsed arguments
@@ -218,6 +237,14 @@ def parse_cli_args():
     options.infinite = args.infinite or args.new
     options.new = args.new
     options.infinite_wait_time = args.wait_infinite
+
+    options.leaves_falling = args.leaves_falling
+    options.intensity = args.intensity
+    options.fall_speed = args.fall_speed
+
+    if options.leaves_falling:
+        options.infinite = False
+        options.new = False
 
     if args.seed is not None:
         options.set_seed(args.seed)
@@ -262,6 +289,8 @@ def main():
     try:
         if options.infinite:
             utils.run_infinite(window, options)
+        elif options.leaves_falling:
+            utils.run_leaves_falling(window, options)
         else:
             utils.run_single_tree(window, options)
             
