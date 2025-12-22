@@ -41,10 +41,16 @@ def animate_leaves_falling(window):
                         'vy': 0
                     })
             
-            # Reset to static tree
-            for r in range(window.height):
-                window.chars[r] = list(static_tree[r])
-            
+            # Clear previous leaves (Optimization: Clean only "dirty" pixels)
+            for leaf in falling:
+                # Restore the character from static_tree at the leaf's previous screen position
+                sx, sy = window.plane_to_screen(leaf['x'], leaf['y'])
+                
+                # Check bounds before accessing
+                if 0 <= sx < window.height and 0 <= sy < window.width:
+                    # Restore original char/color from static_tree
+                    window.chars[sx][sy] = static_tree[sx][sy]
+
             # Update and draw falling leaves
             still_active = []
             for leaf in falling:
@@ -77,11 +83,9 @@ def animate_leaves_falling(window):
             sleep(frame_delay)
 
     except KeyboardInterrupt:
-        print(SHOW_CURSOR, end="")
         window.reset_cursor()
         print("\rStopped by user\n")
     finally:
         sys.stdout.write(SHOW_CURSOR)
         sys.stdout.flush()
-        window.reset_cursor()
 

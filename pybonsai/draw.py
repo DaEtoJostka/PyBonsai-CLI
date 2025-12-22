@@ -68,11 +68,8 @@ class TerminalWindow:
     def draw(self):
         sys.stdout.write(HIDE_CURSOR)
 
-        output = ""
-        for i, row in enumerate(self.chars):
-            output += "".join(row)
-            if i < self.height - 1:
-                output += "\n"
+        lines = ["".join(row) for row in self.chars]
+        output = "\n".join(lines)
         
         sys.stdout.write(output)
         sys.stdout.write(f"\033[{self.height - 1}A\033[G") # Move up (height-1) lines and to start of line
