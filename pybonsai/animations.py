@@ -31,7 +31,14 @@ def animate_leaves_falling(window):
             spawn_chance = window.options.intensity / 20.0  # intensity 10 = 50% chance per frame
             if random.random() < spawn_chance:
                 if window.leaf_points:
-                    src = random.choice(window.leaf_points)
+                    # Weight selection by Y coordinate (higher Y = higher chance)
+                    # Use choices() which supports weights
+                    src = random.choices(
+                        window.leaf_points, 
+                        weights=[p[1] for p in window.leaf_points], 
+                        k=1
+                    )[0]
+                    
                     falling.append({
                         'x': src[0],
                         'y': src[1],
