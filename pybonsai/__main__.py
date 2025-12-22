@@ -119,6 +119,7 @@ def _print_help():
     -y, --height          maximum height of the tree [default {Options.WINDOW_HEIGHT}]
 
     -t, --type            tree type: integer between 0 and 3 inclusive [default random]
+    -b, --bonsai          enable bonsai preset settings (invokes specific defaults for small tree)
     -S, --start-len       length of the root branch [default {Options.INITIAL_LEN}]
     -L, --leaf-len        length of each leaf [default {Options.LEAF_LEN}]
     -l, --layers          number of branch layers: more => more branches [default {Options.NUM_LAYERS}]
@@ -132,7 +133,7 @@ def _print_help():
     -W, --wait-infinite   time delay between drawing in infinite mode [default {Options.INFINITE_WAIT_TIME}]
 """
     USAGE = ("usage: pybonsai [-h] [--version] [-s SEED] [-i] [-w WAIT] "
-             "[-c BRANCH_CHARS] [-C LEAF_CHARS] [-x WIDTH] [-y HEIGHT] [-t TYPE] "
+             "[-c BRANCH_CHARS] [-C LEAF_CHARS] [-x WIDTH] [-y HEIGHT] [-t TYPE] [-b] "
              "[-S START_LEN] [-L LEAF_LEN] [-l LAYERS] [-a ANGLE] [-o PATH] [-f] "
              "[-I] [-n] [-W WAIT_INFINITE]")
 
@@ -165,10 +166,11 @@ def parse_cli_args():
     parser.add_argument('-x', '--width', type=int, default=default_width)
     parser.add_argument('-y', '--height', type=int, default=default_height)
     parser.add_argument('-t', '--type', type=int, choices=range(4))
-    parser.add_argument('-S', '--start-len', type=int, default=options.initial_len)
-    parser.add_argument('-L', '--leaf-len', type=int, default=options.leaf_len)
-    parser.add_argument('-l', '--layers', type=int, default=options.num_layers)
-    parser.add_argument('-a', '--angle', type=int, default=Options.ANGLE_MEAN)
+    parser.add_argument('-b', '--bonsai', action='store_true')
+    parser.add_argument('-S', '--start-len', type=int)
+    parser.add_argument('-L', '--leaf-len', type=int)
+    parser.add_argument('-l', '--layers', type=int)
+    parser.add_argument('-a', '--angle', type=int)
     parser.add_argument('-o', '--save', type=str, metavar='PATH')
     parser.add_argument('-f', '--fixed-window', action='store_true')
     parser.add_argument('-I', '--infinite', action='store_true')
@@ -178,16 +180,22 @@ def parse_cli_args():
     args = parser.parse_args()
 
     # Update options with parsed arguments
+    start_len = 11 if args.bonsai else options.initial_len
+    leaf_len = 4 if args.bonsai else options.leaf_len
+    layers = 6 if args.bonsai else options.num_layers
+    angle = 50 if args.bonsai else Options.ANGLE_MEAN
+
+    # Apply arguments if they are explicitly provided, otherwise use the defaults (bonsai or normal)
     options.instant = args.instant
     options.wait_time = args.wait
     options.branch_chars = args.branch_chars
     options.leaf_chars = args.leaf_chars
     options.window_width = args.width
     options.window_height = args.height
-    options.initial_len = args.start_len
-    options.leaf_len = args.leaf_len
-    options.num_layers = args.layers
-    options.angle_mean = radians(args.angle)
+    options.initial_len = args.start_len if args.start_len is not None else start_len
+    options.leaf_len = args.leaf_len if args.leaf_len is not None else leaf_len
+    options.num_layers = args.layers if args.layers is not None else layers
+    options.angle_mean = radians(args.angle) if args.angle is not None else radians(angle)
     options.save_path = args.save
     options.fixed_window = args.fixed_window
     options.infinite = args.infinite or args.new
@@ -199,6 +207,9 @@ def parse_cli_args():
 
     if args.type is not None:
         options.type = args.type
+        options.user_set_type = True
+    elif args.bonsai:
+        options.type = 2
         options.user_set_type = True
     
     return options
