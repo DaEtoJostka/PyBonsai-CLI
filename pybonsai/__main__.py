@@ -36,7 +36,7 @@ from os import get_terminal_size
 
 
 VERSION = "2.0.0"
-DESC = "PyBonsai procedurally generates ASCII art bonsai trees in your terminal."
+DESC = "PyBonsai procedurally generates ASCII art bonsai trees in your terminal.\nLeave a ⭐️ on GitHub: https://github.com/DaEtoJostka/PyBonsai-CLI"
 
 
 class Options:
