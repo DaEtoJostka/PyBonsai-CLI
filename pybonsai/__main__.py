@@ -26,6 +26,7 @@
 
 from . import draw
 from . import utils
+from . import colors
 import argparse
 import sys
 
@@ -75,6 +76,11 @@ class Options:
         self.branch_chars = Options.BRANCH_CHARS
         self.leaf_chars = Options.LEAF_CHARS
 
+        # Color options
+        self.branch_colour = colors.DEFAULT_BRANCH_COLOUR
+        self.leaf_colour = colors.DEFAULT_LEAF_COLOUR
+        self.soil_colour = colors.DEFAULT_SOIL_COLOUR
+
         self.user_set_type = False
         self.type = random.randint(0, 3)
 
@@ -118,7 +124,7 @@ def _print_help():
     -x, --width           maximum width of the tree [default {Options.WINDOW_WIDTH}]
     -y, --height          maximum height of the tree [default {Options.WINDOW_HEIGHT}]
 
-    -t, --type            tree type: integer between 0 and 3 inclusive [default random]
+    -t, --type            tree type [0-3]: "classic":0, "fibonacci":1, "offset fibonacci":2, "random fibonacci":3 [default random]
     -b, --bonsai          enable bonsai preset settings (invokes specific defaults for small tree)
     -S, --start-len       length of the root branch [default {Options.INITIAL_LEN}]
     -L, --leaf-len        length of each leaf [default {Options.LEAF_LEN}]
@@ -131,11 +137,17 @@ def _print_help():
     -I, --infinite        run in infinite mode, infinitely growing same tree
     -n, --new             run in infinite mode, automatically growing new trees
     -W, --wait-infinite   time delay between drawing in infinite mode [default {Options.INFINITE_WAIT_TIME}]
+
+    --preset              apply a color preset: {", ".join(colors.PRESETS.keys())}
+    --branch-color        custom color for branches (e.g. "red", "#553311", "100,60,30")
+    --leaf-color          custom color for leaves
+    --soil-color          custom color for soil
 """
     USAGE = ("usage: pybonsai [-h] [--version] [-s SEED] [-i] [-w WAIT] "
              "[-c BRANCH_CHARS] [-C LEAF_CHARS] [-x WIDTH] [-y HEIGHT] [-t TYPE] [-b] "
              "[-S START_LEN] [-L LEAF_LEN] [-l LAYERS] [-a ANGLE] [-o PATH] [-f] "
-             "[-I] [-n] [-W WAIT_INFINITE]")
+             "[-I] [-n] [-W WAIT_INFINITE] [--preset PRESET] [--branch-color COLOR] "
+             "[--leaf-color COLOR] [--soil-color COLOR]")
 
     print()
     print(DESC)
@@ -177,6 +189,11 @@ def parse_cli_args():
     parser.add_argument('-n', '--new', action='store_true')
     parser.add_argument('-W', '--wait-infinite', type=float, default=options.infinite_wait_time)
 
+    parser.add_argument('--preset', type=str)
+    parser.add_argument('--branch-color', type=str)
+    parser.add_argument('--leaf-color', type=str)
+    parser.add_argument('--soil-color', type=str)
+
     args = parser.parse_args()
 
     # Update options with parsed arguments
@@ -211,6 +228,29 @@ def parse_cli_args():
     elif args.bonsai:
         options.type = 2
         options.user_set_type = True
+
+    # Handle colors: Presets first, then overrides
+    if args.preset:
+        preset_name = args.preset.lower()
+        if preset_name in colors.PRESETS:
+            preset = colors.PRESETS[preset_name]
+            options.branch_colour = preset.get("branch_colour", options.branch_colour)
+            options.leaf_colour = preset.get("leaf_colour", options.leaf_colour)
+            options.soil_colour = preset.get("soil_colour", options.soil_colour)
+        else:
+            print(f"Warning: Preset '{args.preset}' not found. Available: {', '.join(colors.PRESETS.keys())}")
+
+    # Explicit color overrides
+    try:
+        if args.branch_color:
+            options.branch_colour = colors.parse_color(args.branch_color)
+        if args.leaf_color:
+            options.leaf_colour = colors.parse_color(args.leaf_color)
+        if args.soil_color:
+            options.soil_colour = colors.parse_color(args.soil_color)
+    except ValueError as e:
+        print(f"Error parsing colors: {e}")
+        exit(1)
     
     return options
 

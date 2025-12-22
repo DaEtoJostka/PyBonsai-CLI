@@ -3,6 +3,8 @@ from . import utils
 import random
 from time import sleep
 import re
+import sys
+import os
 
 
 #ANSI escape codes (https://en.wikipedia.org/wiki/ANSI_escape_code)
@@ -59,19 +61,25 @@ class TerminalWindow:
         print("\033[2J", end="")
 
     def draw(self):
-        print(HIDE_CURSOR, end="")
+        sys.stdout.write(HIDE_CURSOR)
 
-        for i in self.chars:
-            print("".join(i))
-
-        print(f"\033[{self.height}A", end="")  #move cursor to the top after we have finished
-        print(SHOW_CURSOR, end="")
+        output = ""
+        for i, row in enumerate(self.chars):
+            output += "".join(row)
+            if i < self.height - 1:
+                output += "\n"
+        
+        sys.stdout.write(output)
+        sys.stdout.write(f"\033[{self.height - 1}A\033[G") # Move up (height-1) lines and to start of line
+        sys.stdout.write(SHOW_CURSOR)
+        sys.stdout.flush()
 
         self.needs_clear = True
 
     def reset_cursor(self):
         #cursor will have been left at the top from drawing, so we need to place it back at the bottom
-        print(f"\033[{self.height}B", end="")
+        sys.stdout.write(f"\033[{self.height - 1}B\r\n")
+        sys.stdout.flush()
       
     def plane_to_screen(self, x, y):
         #convert cartesian coords to array indices
@@ -97,6 +105,15 @@ class TerminalWindow:
         if self.options.fixed_window:
             return False
         
+        # Don't grow beyond terminal height to prevent scrolling artifacts
+        try:
+            _, term_height = os.get_terminal_size()
+            if self.height >= term_height - 1:
+                return False
+            delta_height = min(delta_height, term_height - 1 - self.height)
+        except OSError:
+            pass
+
         self.height += delta_height
 
         for _ in range(delta_height):

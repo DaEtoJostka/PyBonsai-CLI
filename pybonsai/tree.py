@@ -57,7 +57,7 @@ class Tree:
                     colour = Tree.BOX_COLOUR
                 elif i == 0:
                     char = "_"
-                    colour = Tree.SOIL_COLOUR
+                    colour = self.window.choose_colour(self.options.soil_colour)
                 elif i == Tree.BOX_HEIGHT - 1:
                     char = "_"
                     colour = Tree.BOX_COLOUR
@@ -67,7 +67,7 @@ class Tree:
                     else:
                         char = " "
 
-                    colour = Tree.SOIL_COLOUR
+                    colour = self.window.choose_colour(self.options.soil_colour)
 
                 self.window.set_char_instant(inx1, inx2, char, colour, True)
 
@@ -110,7 +110,8 @@ class Tree:
             else:
                 char = "-"
 
-            self.window.set_char_instant(inx1, inx2, char, Tree.SOIL_COLOUR, True)
+            colour = self.window.choose_colour(self.options.soil_colour)
+            self.window.set_char_instant(inx1, inx2, char, colour, True)
 
     def draw_tree_base(self, trunk_width):
         #just add some extra padding at the bottom of the trunk to look nice. Must be called after tree is grown
@@ -120,13 +121,15 @@ class Tree:
         right_x = inx2 + trunk_width // 2
 
         #off-by-one error: line drawing moves left to right, causing trunk to be to the left of the center, so move the base right to compensate
+        # Use branch colour for the base as well
         if trunk_width % 2 == 0:
-            right_x -= 1
+             right_x -= 1
 
-        self.window.set_char_instant(inx1, left_x - 2, ".", (255, 255, 0), True)
-        self.window.set_char_instant(inx1, left_x - 1, "/", (255, 255, 0), True)
-        self.window.set_char_instant(inx1, right_x + 1, "\\", (255, 255, 0), True)
-        self.window.set_char_instant(inx1, right_x + 2, ".", (255, 255, 0), True)
+        colour = self.window.choose_colour(self.options.branch_colour)
+        self.window.set_char_instant(inx1, left_x - 2, ".", colour, True)
+        self.window.set_char_instant(inx1, left_x - 1, "/", colour, True)
+        self.window.set_char_instant(inx1, right_x + 1, "\\", colour, True)
+        self.window.set_char_instant(inx1, right_x + 2, ".", colour, True)
 
 
 class RecursiveTree(Tree):
@@ -174,7 +177,7 @@ class ClassicTree(RecursiveTree):
         
         end_x, end_y = self.get_end_coords(x, y, length, theta)
 
-        self.window.draw_line((x, y), (end_x, end_y), ClassicTree.BRANCH_COLOUR, round(width))
+        self.window.draw_line((x, y), (end_x, end_y), self.options.branch_colour, round(width))
 
         self.draw_end_branches(x, y, layer, length, width, theta)
 
@@ -249,7 +252,7 @@ class FibonacciTree(RecursiveTree):
         
         end_x, end_y = self.get_end_coords(x, y, length, theta)
 
-        self.window.draw_line((x, y), (end_x, end_y), FibonacciTree.BRANCH_COLOUR, round(width))
+        self.window.draw_line((x, y), (end_x, end_y), self.options.branch_colour, round(width))
 
         self.draw_end_branches(x, y, layer_inx, branch_inx, length, width, theta)
 
@@ -369,7 +372,7 @@ class Leaves:
             for i in range(self.options.leaf_len):
                 pos += vel
 
-                colour = (0, random.randint(75, 255), 0)
+                colour = self.window.choose_colour(self.options.leaf_colour)
                 char = random.choice(self.options.leaf_chars)
 
                 if self.options.instant:
