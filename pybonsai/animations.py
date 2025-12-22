@@ -77,10 +77,11 @@ def animate_leaves_falling(window):
             sleep(frame_delay)
 
     except KeyboardInterrupt:
-        print(draw.SHOW_CURSOR, end="")
+        print(SHOW_CURSOR, end="")
         window.reset_cursor()
         print("\rStopped by user\n")
     finally:
         sys.stdout.write(SHOW_CURSOR)
         sys.stdout.flush()
         window.reset_cursor()
+
