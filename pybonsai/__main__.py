@@ -60,7 +60,6 @@ class Options:
     WINDOW_WIDTH = 80
     WINDOW_HEIGHT = 25
 
-    LEAF_FALL = False
     INFINITE_WAIT_TIME = 5
     def __init__(self):
         #set the default values
@@ -89,7 +88,6 @@ class Options:
 
         self.window_width, self.window_height = self.get_default_window()
 
-        self.leaf_fall = Options.LEAF_FALL
         self.save_path = None
 
     def get_default_window(self):
@@ -140,7 +138,6 @@ def _print_help():
     -n, --new             run in infinite mode, automatically growing new trees
     -W, --wait-infinite   time delay between drawing in infinite mode [default {Options.INFINITE_WAIT_TIME}]
 
-    --leaf-fall           animate leaves falling from the tree
     --preset              apply a color preset: {", ".join(colors.PRESETS.keys())}
     --branch-color        custom color for branches (e.g. "red", "#553311", "100,60,30")
     --leaf-color          custom color for leaves
@@ -149,7 +146,7 @@ def _print_help():
     USAGE = ("usage: pybonsai [-h] [--version] [-s SEED] [-i] [-w WAIT] "
              "[-c BRANCH_CHARS] [-C LEAF_CHARS] [-x WIDTH] [-y HEIGHT] [-t TYPE] [-b] "
              "[-S START_LEN] [-L LEAF_LEN] [-l LAYERS] [-a ANGLE] [-o PATH] [-f] "
-             "[-I] [-n] [-W WAIT_INFINITE] [--leaf-fall] [--preset PRESET] [--branch-color COLOR] "
+             "[-I] [-n] [-W WAIT_INFINITE] [--preset PRESET] [--branch-color COLOR] "
              "[--leaf-color COLOR] [--soil-color COLOR]")
 
     print()
@@ -192,7 +189,6 @@ def parse_cli_args():
     parser.add_argument('-n', '--new', action='store_true')
     parser.add_argument('-W', '--wait-infinite', type=float, default=options.infinite_wait_time)
 
-    parser.add_argument('--leaf-fall', action='store_true')
     parser.add_argument('--preset', type=str)
     parser.add_argument('--branch-color', type=str)
     parser.add_argument('--leaf-color', type=str)
@@ -222,11 +218,6 @@ def parse_cli_args():
     options.infinite = args.infinite or args.new
     options.new = args.new
     options.infinite_wait_time = args.wait_infinite
-    options.leaf_fall = args.leaf_fall
-
-    if options.leaf_fall:
-        options.infinite = False
-        options.new = False
 
     if args.seed is not None:
         options.set_seed(args.seed)
@@ -271,8 +262,6 @@ def main():
     try:
         if options.infinite:
             utils.run_infinite(window, options)
-        elif options.leaf_fall:
-            utils.run_leaf_fall(window, options)
         else:
             utils.run_single_tree(window, options)
             
