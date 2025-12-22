@@ -134,6 +134,8 @@ def run_infinite(window, options):
 
 def run_leaves_falling(window, options):
     from . import animations
+    window.clear_screen()
+    window.reset_cursor()
     t = get_tree(window, options)
     t.draw()
     window.draw()
