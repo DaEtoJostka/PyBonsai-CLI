@@ -53,9 +53,9 @@ class TerminalWindow:
         
         try:
             while True:
-                # Spawn new leaves based on intensity
-                spawn_count = max(1, self.options.intensity // 2)
-                for _ in range(spawn_count):
+                # Spawn new leaves based on intensity (probability-based for subtler effect)
+                spawn_chance = self.options.intensity / 20.0  # intensity 10 = 50% chance per frame
+                if random.random() < spawn_chance:
                     if self.leaf_points:
                         src = random.choice(self.leaf_points)
                         falling.append({
@@ -66,6 +66,7 @@ class TerminalWindow:
                             'vx': random.uniform(-0.3, 0.3),
                             'vy': 0
                         })
+
                 
                 # Reset to static tree
                 for r in range(self.height):
