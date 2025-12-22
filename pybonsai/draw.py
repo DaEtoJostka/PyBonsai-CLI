@@ -66,14 +66,11 @@ class TerminalWindow:
         print("\033[2J", end="")
 
     def draw(self):
-        sys.stdout.write(HIDE_CURSOR)
-
         lines = ["".join(row) for row in self.chars]
         output = "\n".join(lines)
         
         sys.stdout.write(output)
         sys.stdout.write(f"\033[{self.height - 1}A\033[G") # Move up (height-1) lines and to start of line
-        sys.stdout.write(SHOW_CURSOR)
         sys.stdout.flush()
 
         self.needs_clear = True

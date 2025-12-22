@@ -1,5 +1,6 @@
 import math
 import time
+import sys
 from pathlib import Path
 
 from . import tree
@@ -95,6 +96,8 @@ def get_tree(window, options):
 
 
 def run_single_tree(window, options):
+    from .draw import HIDE_CURSOR
+    sys.stdout.write(HIDE_CURSOR)
     t = get_tree(window, options)
     t.draw()
     window.draw()
@@ -115,6 +118,8 @@ def run_single_tree(window, options):
 
 
 def run_infinite(window, options):
+    from .draw import HIDE_CURSOR
+    sys.stdout.write(HIDE_CURSOR)
     if options.new:
         while True:
             window.clear_screen()

@@ -295,9 +295,10 @@ def main():
             utils.run_single_tree(window, options)
             
     except KeyboardInterrupt:
-        print(draw.SHOW_CURSOR, end="")
         window.reset_cursor()
         print("\rStopped by user\n")
+    finally:
+        print(draw.SHOW_CURSOR, end="", flush=True)
 
 
 if __name__ == "__main__":

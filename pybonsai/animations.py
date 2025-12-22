@@ -8,7 +8,7 @@ from time import sleep
 from .draw import HIDE_CURSOR, SHOW_CURSOR
 
 
-TUMBLING_CHARS = ['.', ',', '-', "'", '`']
+TUMBLING_CHARS = ['.', ',', '-', "'", '`', '-']
 
 
 def animate_leaves_falling(window):
@@ -64,7 +64,7 @@ def animate_leaves_falling(window):
                 # Physics
                 leaf['vy'] -= gravity
                 leaf['vx'] *= drag
-                leaf['vx'] += random.uniform(-0.02, 0.02)
+                leaf['vx'] += random.uniform(-0.03, 0.03)
                 
                 leaf['x'] += leaf['vx']
                 leaf['y'] += leaf['vy']
