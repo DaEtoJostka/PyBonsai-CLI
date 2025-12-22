@@ -26,8 +26,8 @@ class TerminalWindow:
         self.height = height
 
         self.options = options
-
         self.chars = [[TerminalWindow.BACKGROUND_CHAR for _ in range(width)] for _ in range(height)]
+        self.falling_leaves = []
 
     def to_string(self):
         raw_string = "\n".join("".join(row) for row in self.chars)
@@ -267,3 +267,72 @@ class TerminalWindow:
             self.draw_steep_line(start, end, colour, width, char, mid_line)
         else:
             self.draw_shallow_line(start, end, colour, width, char, mid_line)
+
+    def add_falling_leaf(self, x, y, char, colour):
+        self.falling_leaves.append({
+            'x': x,
+            'y': y,
+            'char': char,
+            'colour': colour,
+            'vx': random.uniform(-0.5, 0.5),
+            'vy': 0.1
+        })
+
+    def animate_leaf_fall(self):
+        if not self.falling_leaves:
+            return
+
+        import copy
+        # 1. Clear falling leaves from the main chars buffer to get the 'static' tree
+        for leaf in self.falling_leaves:
+            nx, ny = self.plane_to_screen(leaf['x'], leaf['y'])
+            if 0 <= nx < self.height and 0 <= ny < self.width:
+                self.chars[nx][ny] = TerminalWindow.BACKGROUND_CHAR
+
+        static_tree = copy.deepcopy(self.chars)
+        
+        # 2. Gravity and animation loop
+        gravity = 0.2
+        drag = 0.95
+        
+        active_leaves = [l for l in self.falling_leaves]
+        # Hide cursor initially
+        sys.stdout.write(HIDE_CURSOR)
+        
+        try:
+            while active_leaves:
+                # Reset chars to static tree
+                for r in range(self.height):
+                    self.chars[r] = list(static_tree[r])
+                
+                still_active = []
+                for leaf in active_leaves:
+                    # Update physics
+                    leaf['vy'] -= gravity
+                    leaf['vx'] *= drag
+                    leaf['vx'] += random.uniform(-0.05, 0.05)
+                    
+                    leaf['x'] += leaf['vx']
+                    leaf['y'] += leaf['vy']
+                    
+                    # Check bounds
+                    nx, ny = self.plane_to_screen(leaf['x'], leaf['y'])
+                    
+                    if 0 <= nx < self.height and 0 <= ny < self.width:
+                        # Draw leaf
+                        coloured = self.colour_char(leaf['char'], leaf['colour'][0], leaf['colour'][1], leaf['colour'][2])
+                        self.chars[nx][ny] = coloured
+                        still_active.append(leaf)
+                    elif nx < self.height:
+                        # Still falling but off-screen sides/top
+                        if leaf['y'] > 0:
+                            still_active.append(leaf)
+                
+                active_leaves = still_active
+                self.draw()
+                sleep(0.04)
+        finally:
+            sys.stdout.write(SHOW_CURSOR)
+            sys.stdout.flush()
+        
+        self.reset_cursor()
