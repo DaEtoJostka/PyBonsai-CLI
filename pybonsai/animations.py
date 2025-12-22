@@ -8,6 +8,9 @@ from time import sleep
 from .draw import HIDE_CURSOR, SHOW_CURSOR
 
 
+TUMBLING_CHARS = ['.', ',', '-', "'", '`']
+
+
 def animate_leaves_falling(window):
     """Animate leaves falling from the tree canopy."""
     if not window.leaf_points:
@@ -33,16 +36,13 @@ def animate_leaves_falling(window):
                 if window.leaf_points:
                     # Weight selection by Y coordinate (higher Y = higher chance)
                     # Use choices() which supports weights
-                    src = random.choices(
-                        window.leaf_points, 
-                        weights=[p[1] for p in window.leaf_points], 
-                        k=1
-                    )[0]
+                    src = random.choice(window.leaf_points)
                     
                     falling.append({
                         'x': src[0],
                         'y': src[1],
-                        'char': random.choice(window.options.leaf_chars),
+
+                        'char': random.choice(TUMBLING_CHARS),
                         'colour': window.choose_colour(window.options.leaf_colour),
                         'vx': random.uniform(-0.3, 0.3),
                         'vy': 0
@@ -69,9 +69,13 @@ def animate_leaves_falling(window):
                 leaf['x'] += leaf['vx']
                 leaf['y'] += leaf['vy']
                 
-                # Flip character occasionally
-                if random.random() < 0.1:
-                    leaf['char'] = random.choice(window.options.leaf_chars)
+
+                # Cycle character every frame
+                try:
+                    current_idx = TUMBLING_CHARS.index(leaf['char'])
+                    leaf['char'] = TUMBLING_CHARS[(current_idx + 1) % len(TUMBLING_CHARS)]
+                except ValueError:
+                    leaf['char'] = TUMBLING_CHARS[0]
                 
                 # Check bounds
                 sx, sy = window.plane_to_screen(leaf['x'], leaf['y'])
