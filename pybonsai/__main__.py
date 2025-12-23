@@ -158,28 +158,25 @@ def _print_help():
     -n, --new             run in infinite mode, automatically growing new trees
     -W, --wait-infinite   time delay between drawing in infinite mode [default {Options.INFINITE_WAIT_TIME}]
 
-    --preset              [NEW] ✨ apply a color preset: {", ".join(colors.PRESETS.keys())}
-    --branch-color        [NEW] ✨ custom color for branches (e.g. "red", "#553311", "100,60,30")
-    --leaf-color          [NEW] ✨ custom color for leaves
-    --soil-color          [NEW] ✨ custom color for soil
+    -p, --preset          [NEW] ✨ apply a color preset: {", ".join(colors.PRESETS.keys())}
+    -B, --branch-color    [NEW] ✨ custom color for branches (e.g. "red", "#553311", "100,60,30")
+    -e, --leaf-color      [NEW] ✨ custom color for leaves
+    -g, --soil-color      [NEW] ✨ custom color for soil
 
-    --leaves-falling      [NEW] ✨ animate leaves falling from the tree continuously
-    --intensity           [NEW] ✨ intensity of falling leaves [1-10, default {Options.INTENSITY}]
-    --fall-speed          [NEW] ✨ speed of falling animation [default {Options.FALL_SPEED}]
-    --tumbling-speed      [NEW] ✨ speed of leaf character change [default {Options.TUMBLING_SPEED}]
+    -F, --leaves-falling  [NEW] ✨ animate leaves falling from the tree continuously
+    -N, --intensity       [NEW] ✨ intensity of falling leaves [1-10, default {Options.INTENSITY}]
+    -d, --fall-speed      [NEW] ✨ speed of falling animation [default {Options.FALL_SPEED}]
+    -T, --tumbling-speed  [NEW] ✨ speed of leaf character change [default {Options.TUMBLING_SPEED}]
 
-    --lofi                [NEW] ✨ play Lo-Fi radio stream in the terminal (requires ffplay)
-    --volume              [NEW] ✨ volume level for radio [0-100, default {Options.VOLUME}]
-    --radio-url           [NEW] ✨ custom radio stream URL
+    -R, --lofi            [NEW] ✨ play Lo-Fi radio stream in the terminal (requires ffplay)
+    -V, --volume          [NEW] ✨ volume level for radio [0-100, default {Options.VOLUME}]
+    -U, --radio-url       [NEW] ✨ custom radio stream URL
 """
     USAGE = ("usage: pybonsai [-h] [--version] [-s SEED] [-i] [-w WAIT] "
              "[-c BRANCH_CHARS] [-C LEAF_CHARS] [-x WIDTH] [-y HEIGHT] [-t TYPE] [-b] "
              "[-S START_LEN] [-L LEAF_LEN] [-l LAYERS] [-a ANGLE] [-o PATH] [-f] "
-             "[-I] [-n] [-W WAIT_INFINITE] [--preset PRESET] [--branch-color COLOR] "
-             "[-I] [-n] [-W WAIT_INFINITE] [--preset PRESET] [--branch-color COLOR] "
-             "[--leaf-color COLOR] [--soil-color COLOR] [--leaves-falling] "
-             "[--intensity N] [--fall-speed S] [--tumbling-speed T] "
-             "[--lofi] [--volume N] [--radio-url URL]")
+             "[-I] [-n] [-W WAIT_INFINITE] [-p PRESET] [-B COLOR] [-e COLOR] [-g COLOR] "
+             "[-F] [-N N] [-d S] [-T T] [-R] [-V N] [-U URL]")
 
     print()
     print(DESC)
@@ -221,19 +218,19 @@ def parse_cli_args():
     parser.add_argument('-n', '--new', action='store_true')
     parser.add_argument('-W', '--wait-infinite', type=float, default=options.infinite_wait_time)
 
-    parser.add_argument('--preset', type=str)
-    parser.add_argument('--branch-color', type=str)
-    parser.add_argument('--leaf-color', type=str)
-    parser.add_argument('--soil-color', type=str)
+    parser.add_argument('-p', '--preset', type=str)
+    parser.add_argument('-B', '--branch-color', type=str)
+    parser.add_argument('-e', '--leaf-color', type=str)
+    parser.add_argument('-g', '--soil-color', type=str)
 
-    parser.add_argument('--leaves-falling', action='store_true')
-    parser.add_argument('--intensity', type=int, default=options.intensity)
-    parser.add_argument('--fall-speed', type=float, default=options.fall_speed)
-    parser.add_argument('--tumbling-speed', type=float, default=options.tumbling_speed)
+    parser.add_argument('-F', '--leaves-falling', action='store_true')
+    parser.add_argument('-N', '--intensity', type=int, default=options.intensity)
+    parser.add_argument('-d', '--fall-speed', type=float, default=options.fall_speed)
+    parser.add_argument('-T', '--tumbling-speed', type=float, default=options.tumbling_speed)
 
-    parser.add_argument('--lofi', action='store_true')
-    parser.add_argument('--volume', type=int, default=options.volume)
-    parser.add_argument('--radio-url', type=str, default=options.radio_url)
+    parser.add_argument('-R', '--lofi', action='store_true')
+    parser.add_argument('-V', '--volume', type=int, default=options.volume)
+    parser.add_argument('-U', '--radio-url', type=str, default=options.radio_url)
 
     args = parser.parse_args()
 
