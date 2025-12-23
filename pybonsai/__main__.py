@@ -170,7 +170,7 @@ def _print_help():
 
     --lofi                [NEW] ✨ play Lo-Fi radio stream in the terminal (requires ffplay)
     --volume              [NEW] ✨ volume level for radio [0-100, default {Options.VOLUME}]
-    --radio-url           [NEW] ✨ custom radio stream URL (youtube only)
+    --radio-url           [NEW] ✨ custom radio stream URL
 """
     USAGE = ("usage: pybonsai [-h] [--version] [-s SEED] [-i] [-w WAIT] "
              "[-c BRANCH_CHARS] [-C LEAF_CHARS] [-x WIDTH] [-y HEIGHT] [-t TYPE] [-b] "
