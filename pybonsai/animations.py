@@ -8,7 +8,7 @@ from time import sleep, time
 from .draw import HIDE_CURSOR, SHOW_CURSOR
 
 
-TUMBLING_CHARS = ['.', ',', '-', "'", '`', '-']
+TUMBLING_CHARS = ['.', ',', '-', "'", '`', '"', '`', "'", '-', ',']
 
 def animate_leaves_falling(window):
     """Animate leaves falling from the tree canopy."""
@@ -30,7 +30,7 @@ def animate_leaves_falling(window):
     try:
         while True:
             # Spawn new leaves based on intensity (probability-based for subtler effect)
-            spawn_chance = window.options.intensity / 20.0  # intensity 10 = 50% chance per frame
+            spawn_chance = window.options.intensity / 10.0  # intensity 1 = 10% chance, 10 = 100% per frame
             if random.random() < spawn_chance:
                 if window.leaf_points:
                     # Weight selection by Y coordinate (higher Y = higher chance)
@@ -64,7 +64,7 @@ def animate_leaves_falling(window):
                 # Physics
                 leaf['vy'] -= gravity
                 leaf['vx'] *= drag
-                leaf['vx'] += random.uniform(-0.03, 0.03)
+                leaf['vx'] += random.uniform(-0.1, 0.1)
                 
                 leaf['x'] += leaf['vx']
                 leaf['y'] += leaf['vy']

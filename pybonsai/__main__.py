@@ -65,7 +65,7 @@ class Options:
     LEAVES_FALLING = False
     INTENSITY = 5
     FALL_SPEED = 0.4
-    TUMBLING_SPEED = 0.5
+    TUMBLING_SPEED = 1
 
     def __init__(self):
         #set the default values
