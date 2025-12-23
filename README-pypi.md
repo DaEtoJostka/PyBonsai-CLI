@@ -103,6 +103,7 @@ OPTIONS:
     -N, --intensity       [NEW] ✨ intensity of falling leaves [1-10, default {Options.INTENSITY}]
     -d, --fall-speed      [NEW] ✨ speed of falling animation [default {Options.FALL_SPEED}]
     -T, --tumbling-speed  [NEW] ✨ speed of leaf character change [default {Options.TUMBLING_SPEED}]
+    -K, --falling-chars   [NEW] ✨ custom characters for falling leaves (e.g. "01" for matrix-style)
 
     -R, --lofi            [NEW] ✨ play Lo-Fi radio stream in the terminal (requires ffplay)
     -V, --volume          [NEW] ✨ volume level for radio [0-100, default {Options.VOLUME}]
