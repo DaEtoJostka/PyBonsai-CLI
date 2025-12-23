@@ -14,7 +14,9 @@ def start_radio(url=None, volume=50):
         return  # Already running
 
     if not shutil.which("ffplay"):
-        print("Warning: 'ffplay' not found. Cannot play radio. Install FFmpeg to enable this feature.")
+        print(
+            "Warning: 'ffplay' not found. Cannot play radio. Install FFmpeg to enable this feature."
+        )
         return
 
     stream_url = url or DEFAULT_LOFI_URL
@@ -25,13 +27,15 @@ def start_radio(url=None, volume=50):
         _radio_process = subprocess.Popen(
             [
                 "ffplay",
-                "-nodisp",          # No video display
-                "-loglevel", "quiet",  # Suppress output
-                "-volume", str(ffplay_volume),
-                stream_url
+                "-nodisp",  # No video display
+                "-loglevel",
+                "quiet",  # Suppress output
+                "-volume",
+                str(ffplay_volume),
+                stream_url,
             ],
             stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL
+            stderr=subprocess.DEVNULL,
         )
     except Exception as e:
         print(f"Warning: Could not start radio: {e}")

@@ -1,27 +1,27 @@
 #!/usr/bin/env python3
 
 
-#   
-#                #&                                  
-#              %&@&                                  
-#       &%@% %&  %@|                                 
-#    &&@@&%#@%_\@@&&@#       @=&                     
-#   &#@# #%##  ;&@%#  %@    @% &%                    
-#     @  %  #&  %%~|       @%@%@&#                   
-#                  |;;         # %                   
-#                     \\        @ % %@%#             
-#                      |~     =;@ __%%               
-#                      =|   ~_=___  %&#              
-#                      || /~         % #             
-#                      |//           &               
-#                      |=                            
-#                      ~|                            
-#                      ;|                            
-#       .---.        ./||\.    .-.     
-#   
+#
+#                #&
+#              %&@&
+#       &%@% %&  %@|
+#    &&@@&%#@%_\@@&&@#       @=&
+#   &#@# #%##  ;&@%#  %@    @% &%
+#     @  %  #&  %%~|       @%@%@&#
+#                  |;;         # %
+#                     \\        @ % %@%#
+#                      |~     =;@ __%%
+#                      =|   ~_=___  %&#
+#                      || /~         % #
+#                      |//           &
+#                      |=
+#                      ~|
+#                      ;|
+#       .---.        ./||\.    .-.
+#
 #       I speak for the trees, for the trees have no voice.
 #       - The Lorax, 1971
-#   
+#
 
 
 from . import draw
@@ -41,9 +41,9 @@ DESC = "PyBonsai procedurally generates ASCII art bonsai trees in your terminal.
 
 
 class Options:
-    #stores all parameters that can be edited via the command line arguments
-    
-    #default values
+    # stores all parameters that can be edited via the command line arguments
+
+    # default values
     NUM_LAYERS = 8
     INITIAL_LEN = 15
     ANGLE_MEAN = 40
@@ -52,10 +52,10 @@ class Options:
 
     INSTANT = False
     WAIT_TIME = 0
-    
+
     BRANCH_CHARS = "~;:="
     LEAF_CHARS = "&%#@"
-    
+
     FIXED = False
 
     WINDOW_WIDTH = 80
@@ -74,7 +74,7 @@ class Options:
     RADIO_URL = None
 
     def __init__(self):
-        #set the default values
+        # set the default values
         self.num_layers = Options.NUM_LAYERS
         self.initial_len = Options.INITIAL_LEN
         self.angle_mean = radians(Options.ANGLE_MEAN)
@@ -113,19 +113,19 @@ class Options:
         self.radio_url = Options.RADIO_URL
 
     def get_default_window(self):
-        #ensure the default values fit the current terminal size
+        # ensure the default values fit the current terminal size
         width, height = get_terminal_size()
 
-        #check the default values fit the current terminal
+        # check the default values fit the current terminal
         width = min(width, Options.WINDOW_WIDTH)
         height = min(height, Options.WINDOW_HEIGHT)
 
         return width, height
-    
+
     def set_seed(self, seed):
         random.seed(seed)
 
-        #the type must be re-chosen because the rng seed has been changed (this ensures repeatable results)
+        # the type must be re-chosen because the rng seed has been changed (this ensures repeatable results)
         if not self.user_set_type:
             self.type = random.randint(0, 3)
 
@@ -175,11 +175,13 @@ def _print_help():
     -V, --volume          [NEW] ✨ volume level for radio [0-100, default {Options.VOLUME}]
     -U, --radio-url       [NEW] ✨ custom radio stream URL
 """
-    USAGE = ("usage: pybonsai [-h] [--version] [-s SEED] [-i] [-w WAIT] "
-             "[-c BRANCH_CHARS] [-C LEAF_CHARS] [-x WIDTH] [-y HEIGHT] [-t TYPE] [-b] "
-             "[-S START_LEN] [-L LEAF_LEN] [-l LAYERS] [-a ANGLE] [-o PATH] [-f] "
-             "[-I] [-n] [-W WAIT_INFINITE] [-p PRESET] [-B COLOR] [-e COLOR] [-g COLOR] "
-             "[-F] [-N N] [-d S] [-T T] [-R] [-V N] [-U URL]")
+    USAGE = (
+        "usage: pybonsai [-h] [--version] [-s SEED] [-i] [-w WAIT] "
+        "[-c BRANCH_CHARS] [-C LEAF_CHARS] [-x WIDTH] [-y HEIGHT] [-t TYPE] [-b] "
+        "[-S START_LEN] [-L LEAF_LEN] [-l LAYERS] [-a ANGLE] [-o PATH] [-f] "
+        "[-I] [-n] [-W WAIT_INFINITE] [-p PRESET] [-B COLOR] [-e COLOR] [-g COLOR] "
+        "[-F] [-N N] [-d S] [-T T] [-R] [-V N] [-U URL]"
+    )
 
     print()
     print(DESC)
@@ -191,50 +193,55 @@ def _print_help():
 
 
 def parse_cli_args():
-    if '-h' in sys.argv or '--help' in sys.argv:
+    if "-h" in sys.argv or "--help" in sys.argv:
         _print_help()
-    #convert sys.argv into a dictionary in the form {option_name : option_value}
+    # convert sys.argv into a dictionary in the form {option_name : option_value}
     options = Options()
     default_width, default_height = options.get_default_window()
 
-    parser = argparse.ArgumentParser(
-        description=DESC,
-        add_help=False
+    parser = argparse.ArgumentParser(description=DESC, add_help=False)
+    parser.add_argument(
+        "--version", action="version", version=f"PyBonsai version {VERSION}"
     )
-    parser.add_argument('--version', action='version', version=f'PyBonsai version {VERSION}')
-    parser.add_argument('-s', '--seed', type=int)
-    parser.add_argument('-i', '--instant', action='store_true')
-    parser.add_argument('-w', '--wait', type=float, default=options.wait_time)
-    parser.add_argument('-c', '--branch-chars', type=str, default=options.branch_chars)
-    parser.add_argument('-C', '--leaf-chars', type=str, default=options.leaf_chars)
-    parser.add_argument('-x', '--width', type=int, default=default_width)
-    parser.add_argument('-y', '--height', type=int, default=default_height)
-    parser.add_argument('-t', '--type', type=int, choices=range(4))
-    parser.add_argument('-b', '--bonsai', action='store_true')
-    parser.add_argument('-S', '--start-len', type=int)
-    parser.add_argument('-L', '--leaf-len', type=int)
-    parser.add_argument('-l', '--layers', type=int)
-    parser.add_argument('-a', '--angle', type=int)
-    parser.add_argument('-o', '--save', type=str, metavar='PATH')
-    parser.add_argument('-f', '--fixed-window', action='store_true')
-    parser.add_argument('-I', '--infinite', action='store_true')
-    parser.add_argument('-n', '--new', action='store_true')
-    parser.add_argument('-W', '--wait-infinite', type=float, default=options.infinite_wait_time)
+    parser.add_argument("-s", "--seed", type=int)
+    parser.add_argument("-i", "--instant", action="store_true")
+    parser.add_argument("-w", "--wait", type=float, default=options.wait_time)
+    parser.add_argument("-c", "--branch-chars", type=str, default=options.branch_chars)
+    parser.add_argument("-C", "--leaf-chars", type=str, default=options.leaf_chars)
+    parser.add_argument("-x", "--width", type=int, default=default_width)
+    parser.add_argument("-y", "--height", type=int, default=default_height)
+    parser.add_argument("-t", "--type", type=int, choices=range(4))
+    parser.add_argument("-b", "--bonsai", action="store_true")
+    parser.add_argument("-S", "--start-len", type=int)
+    parser.add_argument("-L", "--leaf-len", type=int)
+    parser.add_argument("-l", "--layers", type=int)
+    parser.add_argument("-a", "--angle", type=int)
+    parser.add_argument("-o", "--save", type=str, metavar="PATH")
+    parser.add_argument("-f", "--fixed-window", action="store_true")
+    parser.add_argument("-I", "--infinite", action="store_true")
+    parser.add_argument("-n", "--new", action="store_true")
+    parser.add_argument(
+        "-W", "--wait-infinite", type=float, default=options.infinite_wait_time
+    )
 
-    parser.add_argument('-p', '--preset', type=str)
-    parser.add_argument('-B', '--branch-color', type=str)
-    parser.add_argument('-e', '--leaf-color', type=str)
-    parser.add_argument('-g', '--soil-color', type=str)
+    parser.add_argument("-p", "--preset", type=str)
+    parser.add_argument("-B", "--branch-color", type=str)
+    parser.add_argument("-e", "--leaf-color", type=str)
+    parser.add_argument("-g", "--soil-color", type=str)
 
-    parser.add_argument('-F', '--leaves-falling', action='store_true')
-    parser.add_argument('-N', '--intensity', type=int, default=options.intensity)
-    parser.add_argument('-d', '--fall-speed', type=float, default=options.fall_speed)
-    parser.add_argument('-T', '--tumbling-speed', type=float, default=options.tumbling_speed)
-    parser.add_argument('-K', '--falling-chars', type=str, default=options.falling_chars)
+    parser.add_argument("-F", "--leaves-falling", action="store_true")
+    parser.add_argument("-N", "--intensity", type=int, default=options.intensity)
+    parser.add_argument("-d", "--fall-speed", type=float, default=options.fall_speed)
+    parser.add_argument(
+        "-T", "--tumbling-speed", type=float, default=options.tumbling_speed
+    )
+    parser.add_argument(
+        "-K", "--falling-chars", type=str, default=options.falling_chars
+    )
 
-    parser.add_argument('-R', '--lofi', action='store_true')
-    parser.add_argument('-V', '--volume', type=int, default=options.volume)
-    parser.add_argument('-U', '--radio-url', type=str, default=options.radio_url)
+    parser.add_argument("-R", "--lofi", action="store_true")
+    parser.add_argument("-V", "--volume", type=int, default=options.volume)
+    parser.add_argument("-U", "--radio-url", type=str, default=options.radio_url)
 
     args = parser.parse_args()
 
@@ -254,7 +261,9 @@ def parse_cli_args():
     options.initial_len = args.start_len if args.start_len is not None else start_len
     options.leaf_len = args.leaf_len if args.leaf_len is not None else leaf_len
     options.num_layers = args.layers if args.layers is not None else layers
-    options.angle_mean = radians(args.angle) if args.angle is not None else radians(angle)
+    options.angle_mean = (
+        radians(args.angle) if args.angle is not None else radians(angle)
+    )
     options.save_path = args.save
     options.fixed_window = args.fixed_window
     options.infinite = args.infinite or args.new
@@ -294,7 +303,9 @@ def parse_cli_args():
             options.leaf_colour = preset.get("leaf_colour", options.leaf_colour)
             options.soil_colour = preset.get("soil_colour", options.soil_colour)
         else:
-            print(f"Warning: Preset '{args.preset}' not found. Available: {', '.join(colors.PRESETS.keys())}")
+            print(
+                f"Warning: Preset '{args.preset}' not found. Available: {', '.join(colors.PRESETS.keys())}"
+            )
 
     # Explicit color overrides
     try:
@@ -313,15 +324,21 @@ def parse_cli_args():
 
     # Check for --instant and --wait conflict
     if args.instant and args.wait > 0:
-        errors.append("Conflicting flags: --instant and --wait cannot be used together.")
+        errors.append(
+            "Conflicting flags: --instant and --wait cannot be used together."
+        )
 
     # Check for --infinite/--new and --leaves-falling conflict
     if (args.infinite or args.new) and args.leaves_falling:
-        errors.append("Conflicting flags: --infinite/--new and --leaves-falling are mutually exclusive.")
+        errors.append(
+            "Conflicting flags: --infinite/--new and --leaves-falling are mutually exclusive."
+        )
 
     # Check for --save and animation mode conflict
     if args.save and (args.infinite or args.new or args.leaves_falling or args.lofi):
-        errors.append("Conflicting flags: --save is not supported in animation modes (--infinite, --new, --leaves-falling, or --lofi).")
+        errors.append(
+            "Conflicting flags: --save is not supported in animation modes (--infinite, --new, --leaves-falling, or --lofi)."
+        )
 
     if errors:
         for error in errors:
@@ -331,7 +348,7 @@ def parse_cli_args():
     # If --lofi is enabled and no animation mode is explicitly set, default to --leaves-falling
     if options.lofi and not (args.infinite or args.new or args.leaves_falling):
         options.leaves_falling = True
-    
+
     return options
 
 
@@ -350,7 +367,7 @@ def main():
             utils.run_leaves_falling(window, options)
         else:
             utils.run_single_tree(window, options)
-            
+
     except KeyboardInterrupt:
         window.reset_cursor()
         print("\rStopped by user\n")

@@ -7,10 +7,10 @@ import sys
 import os
 
 
-#ANSI escape codes (https://en.wikipedia.org/wiki/ANSI_escape_code)
+# ANSI escape codes (https://en.wikipedia.org/wiki/ANSI_escape_code)
 END_COLOUR = "\033[00m"
-HIDE_CURSOR = "\033[?25l"  #not supported in all terminals
-SHOW_CURSOR = "\033[?25h"  #not supported in all terminals
+HIDE_CURSOR = "\033[?25l"  # not supported in all terminals
+SHOW_CURSOR = "\033[?25h"  # not supported in all terminals
 
 CHAR_THRESHOLD = 0.3
 
@@ -27,22 +27,24 @@ class TerminalWindow:
 
         self.options = options
 
-        self.chars = [[TerminalWindow.BACKGROUND_CHAR for _ in range(width)] for _ in range(height)]
+        self.chars = [
+            [TerminalWindow.BACKGROUND_CHAR for _ in range(width)]
+            for _ in range(height)
+        ]
         self.leaf_points = []  # Stores (x, y, char, colour) for canopy leaves
 
     def register_leaf_point(self, x, y, char, colour):
         self.leaf_points.append((x, y, char, colour))
 
     def to_string(self):
-
         raw_string = "\n".join("".join(row) for row in self.chars)
-        return re.sub(r'\x1b\[[0-9;]*m', '', raw_string)
+        return re.sub(r"\x1b\[[0-9;]*m", "", raw_string)
 
     def colour_char(self, char, r, g, b):
         return f"\033[38;2;{r};{g};{b}m{char}{END_COLOUR}"
 
     def extract_colour(self, coloured_char):
-        #get the rgb colour from an ANSI coloured character
+        # get the rgb colour from an ANSI coloured character
         splitted = coloured_char.split(";")
 
         r = int(splitted[2])
@@ -60,7 +62,10 @@ class TerminalWindow:
         return r, g, b
 
     def clear_chars(self):
-        self.chars = [[TerminalWindow.BACKGROUND_CHAR for _ in range(self.width)] for _ in range(self.height)]
+        self.chars = [
+            [TerminalWindow.BACKGROUND_CHAR for _ in range(self.width)]
+            for _ in range(self.height)
+        ]
 
     def clear_screen(self):
         print("\033[2J", end="")
@@ -68,20 +73,22 @@ class TerminalWindow:
     def draw(self):
         lines = ["".join(row) for row in self.chars]
         output = "\n".join(lines)
-        
+
         sys.stdout.write(output)
-        sys.stdout.write(f"\033[{self.height - 1}A\033[G") # Move up (height-1) lines and to start of line
+        sys.stdout.write(
+            f"\033[{self.height - 1}A\033[G"
+        )  # Move up (height-1) lines and to start of line
         sys.stdout.flush()
 
         self.needs_clear = True
 
     def reset_cursor(self):
-        #cursor will have been left at the top from drawing, so we need to place it back at the bottom
+        # cursor will have been left at the top from drawing, so we need to place it back at the bottom
         sys.stdout.write(f"\033[{self.height - 1}B\r\n")
         sys.stdout.flush()
-      
+
     def plane_to_screen(self, x, y):
-        #convert cartesian coords to array indices
+        # convert cartesian coords to array indices
         scaled_x = x / TerminalWindow.CHAR_WIDTH
         scaled_y = y / TerminalWindow.CHAR_HEIGHT
 
@@ -89,9 +96,9 @@ class TerminalWindow:
         inx2 = round(scaled_x)
 
         return inx1, inx2
-    
+
     def screen_to_plane(self, x, y):
-        #convert array indices to cartesian coords (inverse of plane_to_screen())
+        # convert array indices to cartesian coords (inverse of plane_to_screen())
         swapped_x = y
         swapped_y = self.height - x
 
@@ -99,11 +106,11 @@ class TerminalWindow:
         scaled_y = swapped_y * TerminalWindow.CHAR_HEIGHT
 
         return scaled_x, scaled_y
-    
+
     def increase_height(self, delta_height):
         if self.options.fixed_window:
             return False
-        
+
         # Don't grow beyond terminal height to prevent scrolling artifacts
         try:
             _, term_height = os.get_terminal_size()
@@ -116,7 +123,9 @@ class TerminalWindow:
         self.height += delta_height
 
         for _ in range(delta_height):
-            self.chars.insert(0, [TerminalWindow.BACKGROUND_CHAR for _ in range(self.width)])
+            self.chars.insert(
+                0, [TerminalWindow.BACKGROUND_CHAR for _ in range(self.width)]
+            )
 
         return True
 
@@ -124,7 +133,7 @@ class TerminalWindow:
         if not is_screen_coords:
             x, y = self.plane_to_screen(x, y)
 
-        #check the point will fit
+        # check the point will fit
         if x < 0:
             height_changed = self.increase_height(abs(x))
 
@@ -138,7 +147,7 @@ class TerminalWindow:
         self.chars[x][y] = coloured
 
     def set_char_wait(self, x, y, char, colour, is_screen_coords, wait_time):
-        #in non instant mode, we want to draw each new character after it is set
+        # in non instant mode, we want to draw each new character after it is set
         self.set_char_instant(x, y, char, colour, is_screen_coords)
 
         self.draw()
@@ -158,13 +167,13 @@ class TerminalWindow:
             return "/"
         else:
             return "\\"
-        
+
     def choose_colour(self, colour):
         if isinstance(colour[0], int):
-            #the colour is not a range, so no choice must be made
+            # the colour is not a range, so no choice must be made
             return colour
         elif len(colour[0]) == 2:
-            #colour should be random with rgb values in the given range
+            # colour should be random with rgb values in the given range
             rand_colour = []
             for lower, upper in colour:
                 value = random.randint(lower, upper)
@@ -173,7 +182,7 @@ class TerminalWindow:
             return rand_colour
         else:
             raise Exception("Invalid colour argument")
-        
+
     def draw_steep_line(self, start, end, colour, width, char, mid_line):
         start_inx, _ = self.plane_to_screen(*start)
         end_inx, _ = self.plane_to_screen(*end)
@@ -182,7 +191,7 @@ class TerminalWindow:
 
         for inx1 in range(start_inx, end_inx + step, step):
             dists = []
-            #get the distance away from the mid line for each cell
+            # get the distance away from the mid line for each cell
             for inx2 in range(self.width):
                 x, y = self.screen_to_plane(inx1, inx2)
 
@@ -190,8 +199,8 @@ class TerminalWindow:
                 dist = abs(desired_x - x)
 
                 dists.append([dist, inx2])
-                
-            #draw the n closest cells (n = width)
+
+            # draw the n closest cells (n = width)
             dists.sort()
             for i in range(width):
                 if i >= len(dists):
@@ -205,9 +214,18 @@ class TerminalWindow:
                 chosen_colour = self.choose_colour(colour)
 
                 if self.options.instant:
-                    self.set_char_instant(inx1, dists[i][1], chosen_char, chosen_colour, True)
+                    self.set_char_instant(
+                        inx1, dists[i][1], chosen_char, chosen_colour, True
+                    )
                 else:
-                    self.set_char_wait(inx1, dists[i][1], chosen_char, chosen_colour, True, self.options.wait_time)
+                    self.set_char_wait(
+                        inx1,
+                        dists[i][1],
+                        chosen_char,
+                        chosen_colour,
+                        True,
+                        self.options.wait_time,
+                    )
 
     def draw_shallow_line(self, start, end, colour, width, char, mid_line):
         _, start_inx = self.plane_to_screen(*start)
@@ -217,7 +235,7 @@ class TerminalWindow:
 
         for inx2 in range(start_inx, end_inx + step, step):
             dists = []
-            #get the distance away from the mid line for each cell
+            # get the distance away from the mid line for each cell
             for inx1 in range(self.height):
                 x, y = self.screen_to_plane(inx1, inx2)
 
@@ -225,8 +243,8 @@ class TerminalWindow:
                 dist = abs(desired_y - y)
 
                 dists.append([dist, inx1])
-                
-            #draw the n closest cells (n = width)
+
+            # draw the n closest cells (n = width)
             dists.sort()
             for i in range(width):
                 if i >= len(dists):
@@ -240,12 +258,21 @@ class TerminalWindow:
                 chosen_colour = self.choose_colour(colour)
 
                 if self.options.instant:
-                    self.set_char_instant(dists[i][1], inx2, chosen_char, chosen_colour, True)
+                    self.set_char_instant(
+                        dists[i][1], inx2, chosen_char, chosen_colour, True
+                    )
                 else:
-                    self.set_char_wait(dists[i][1], inx2, chosen_char, chosen_colour, True, self.options.wait_time)
+                    self.set_char_wait(
+                        dists[i][1],
+                        inx2,
+                        chosen_char,
+                        chosen_colour,
+                        True,
+                        self.options.wait_time,
+                    )
 
     def check_line_bounds(self, start, end):
-        #if the line will not fit in the current window, update the window size so that it willoptions
+        # if the line will not fit in the current window, update the window size so that it willoptions
         h1, _ = self.plane_to_screen(*start)
         h2, _ = self.plane_to_screen(*end)
 
@@ -253,7 +280,7 @@ class TerminalWindow:
 
         if room_from_top < 0:
             self.increase_height(abs(room_from_top))
-    
+
     def draw_line(self, start, end, colour, width):
         mid_line = utils.Line()
         mid_line.set_end_points(start, end)
