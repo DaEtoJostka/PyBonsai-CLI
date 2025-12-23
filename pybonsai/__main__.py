@@ -158,19 +158,19 @@ def _print_help():
     -n, --new             run in infinite mode, automatically growing new trees
     -W, --wait-infinite   time delay between drawing in infinite mode [default {Options.INFINITE_WAIT_TIME}]
 
-    --preset              apply a color preset: {", ".join(colors.PRESETS.keys())}
-    --branch-color        custom color for branches (e.g. "red", "#553311", "100,60,30")
-    --leaf-color          custom color for leaves
-    --soil-color          custom color for soil
+    --preset              [NEW] ✨ apply a color preset: {", ".join(colors.PRESETS.keys())}
+    --branch-color        [NEW] ✨ custom color for branches (e.g. "red", "#553311", "100,60,30")
+    --leaf-color          [NEW] ✨ custom color for leaves
+    --soil-color          [NEW] ✨ custom color for soil
 
-    --leaves-falling      animate leaves falling from the tree continuously
-    --intensity           intensity of falling leaves [1-10, default {Options.INTENSITY}]
-    --fall-speed          speed of falling animation [default {Options.FALL_SPEED}]
-    --tumbling-speed      speed of leaf character change [default {Options.TUMBLING_SPEED}]
+    --leaves-falling      [NEW] ✨ animate leaves falling from the tree continuously
+    --intensity           [NEW] ✨ intensity of falling leaves [1-10, default {Options.INTENSITY}]
+    --fall-speed          [NEW] ✨ speed of falling animation [default {Options.FALL_SPEED}]
+    --tumbling-speed      [NEW] ✨ speed of leaf character change [default {Options.TUMBLING_SPEED}]
 
-    --lofi                play Lo-Fi radio stream in the terminal (requires ffplay)
-    --volume              volume level for radio [0-100, default {Options.VOLUME}]
-    --radio-url           custom radio stream URL
+    --lofi                [NEW] ✨ play Lo-Fi radio stream in the terminal (requires ffplay)
+    --volume              [NEW] ✨ volume level for radio [0-100, default {Options.VOLUME}]
+    --radio-url           [NEW] ✨ custom radio stream URL (youtube only)
 """
     USAGE = ("usage: pybonsai [-h] [--version] [-s SEED] [-i] [-w WAIT] "
              "[-c BRANCH_CHARS] [-C LEAF_CHARS] [-x WIDTH] [-y HEIGHT] [-t TYPE] [-b] "
