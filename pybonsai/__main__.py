@@ -27,6 +27,7 @@
 from . import draw
 from . import utils
 from . import colors
+from . import radio
 import argparse
 import sys
 
@@ -67,6 +68,10 @@ class Options:
     FALL_SPEED = 0.4
     TUMBLING_SPEED = 1
 
+    LOFI = False
+    VOLUME = 50
+    RADIO_URL = None
+
     def __init__(self):
         #set the default values
         self.num_layers = Options.NUM_LAYERS
@@ -100,6 +105,10 @@ class Options:
         self.intensity = Options.INTENSITY
         self.fall_speed = Options.FALL_SPEED
         self.tumbling_speed = Options.TUMBLING_SPEED
+
+        self.lofi = Options.LOFI
+        self.volume = Options.VOLUME
+        self.radio_url = Options.RADIO_URL
 
     def get_default_window(self):
         #ensure the default values fit the current terminal size
@@ -158,6 +167,10 @@ def _print_help():
     --intensity           intensity of falling leaves [1-10, default {Options.INTENSITY}]
     --fall-speed          speed of falling animation [default {Options.FALL_SPEED}]
     --tumbling-speed      speed of leaf character change [default {Options.TUMBLING_SPEED}]
+
+    --lofi                play Lo-Fi radio stream in the terminal (requires ffplay)
+    --volume              volume level for radio [0-100, default {Options.VOLUME}]
+    --radio-url           custom radio stream URL
 """
     USAGE = ("usage: pybonsai [-h] [--version] [-s SEED] [-i] [-w WAIT] "
              "[-c BRANCH_CHARS] [-C LEAF_CHARS] [-x WIDTH] [-y HEIGHT] [-t TYPE] [-b] "
@@ -165,7 +178,8 @@ def _print_help():
              "[-I] [-n] [-W WAIT_INFINITE] [--preset PRESET] [--branch-color COLOR] "
              "[-I] [-n] [-W WAIT_INFINITE] [--preset PRESET] [--branch-color COLOR] "
              "[--leaf-color COLOR] [--soil-color COLOR] [--leaves-falling] "
-             "[--intensity N] [--fall-speed S] [--tumbling-speed T]")
+             "[--intensity N] [--fall-speed S] [--tumbling-speed T] "
+             "[--lofi] [--volume N] [--radio-url URL]")
 
     print()
     print(DESC)
@@ -217,6 +231,10 @@ def parse_cli_args():
     parser.add_argument('--fall-speed', type=float, default=options.fall_speed)
     parser.add_argument('--tumbling-speed', type=float, default=options.tumbling_speed)
 
+    parser.add_argument('--lofi', action='store_true')
+    parser.add_argument('--volume', type=int, default=options.volume)
+    parser.add_argument('--radio-url', type=str, default=options.radio_url)
+
     args = parser.parse_args()
 
     # Update options with parsed arguments
@@ -246,6 +264,10 @@ def parse_cli_args():
     options.intensity = args.intensity
     options.fall_speed = args.fall_speed
     options.tumbling_speed = args.tumbling_speed
+
+    options.lofi = args.lofi
+    options.volume = args.volume
+    options.radio_url = args.radio_url
 
     if options.leaves_falling:
         options.infinite = False
@@ -289,6 +311,10 @@ def parse_cli_args():
 
 def main():
     options = parse_cli_args()
+
+    if options.lofi:
+        radio.start_radio(options.radio_url, options.volume)
+
     window = draw.TerminalWindow(options.window_width, options.window_height, options)
 
     try:
@@ -303,6 +329,7 @@ def main():
         window.reset_cursor()
         print("\rStopped by user\n")
     finally:
+        radio.stop_radio()
         print(draw.SHOW_CURSOR, end="", flush=True)
 
 
