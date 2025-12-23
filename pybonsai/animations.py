@@ -83,8 +83,11 @@ def animate_leaves_falling(window):
                 sx, sy = window.plane_to_screen(leaf['x'], leaf['y'])
                 
                 if 0 <= sx < window.height and 0 <= sy < window.width:
-                    coloured = window.colour_char(leaf['char'], leaf['colour'][0], leaf['colour'][1], leaf['colour'][2])
-                    window.chars[sx][sy] = coloured
+                    # Only skip drawing if the character in the static tree is a foliage character
+                    is_foliage = any(c in static_tree[sx][sy] for c in window.options.leaf_chars)
+                    if not is_foliage:
+                        coloured = window.colour_char(leaf['char'], leaf['colour'][0], leaf['colour'][1], leaf['colour'][2])
+                        window.chars[sx][sy] = coloured
                     still_active.append(leaf)
                 elif leaf['y'] > 0:
                     # Still falling, just off-screen horizontally
