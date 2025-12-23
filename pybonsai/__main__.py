@@ -305,6 +305,30 @@ def parse_cli_args():
     except ValueError as e:
         print(f"Error parsing colors: {e}")
         exit(1)
+
+    # --- Flag Validation ---
+    errors = []
+
+    # Check for --instant and --wait conflict
+    if args.instant and args.wait > 0:
+        errors.append("Conflicting flags: --instant and --wait cannot be used together.")
+
+    # Check for --infinite/--new and --leaves-falling conflict
+    if (args.infinite or args.new) and args.leaves_falling:
+        errors.append("Conflicting flags: --infinite/--new and --leaves-falling are mutually exclusive.")
+
+    # Check for --save and animation mode conflict
+    if args.save and (args.infinite or args.new or args.leaves_falling or args.lofi):
+        errors.append("Conflicting flags: --save is not supported in animation modes (--infinite, --new, --leaves-falling, or --lofi).")
+
+    if errors:
+        for error in errors:
+            print(f"Error: {error}")
+        exit(1)
+
+    # If --lofi is enabled and no animation mode is explicitly set, default to --leaves-falling
+    if options.lofi and not (args.infinite or args.new or args.leaves_falling):
+        options.leaves_falling = True
     
     return options
 
