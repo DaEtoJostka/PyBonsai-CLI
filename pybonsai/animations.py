@@ -3,13 +3,12 @@
 import copy
 import random
 import sys
-from time import sleep
+from time import sleep, time
 
 from .draw import HIDE_CURSOR, SHOW_CURSOR
 
 
 TUMBLING_CHARS = ['.', ',', '-', "'", '`', '-']
-
 
 def animate_leaves_falling(window):
     """Animate leaves falling from the tree canopy."""
@@ -45,7 +44,8 @@ def animate_leaves_falling(window):
                         'char': random.choice(TUMBLING_CHARS),
                         'colour': window.choose_colour(window.options.leaf_colour),
                         'vx': random.uniform(-0.3, 0.3),
-                        'vy': 0
+                        'vy': 0,
+                        'last_tumble': time()
                     })
             
             # Clear previous leaves (Optimization: Clean only "dirty" pixels)
@@ -70,12 +70,14 @@ def animate_leaves_falling(window):
                 leaf['y'] += leaf['vy']
                 
 
-                # Cycle character every frame
-                try:
-                    current_idx = TUMBLING_CHARS.index(leaf['char'])
-                    leaf['char'] = TUMBLING_CHARS[(current_idx + 1) % len(TUMBLING_CHARS)]
-                except ValueError:
-                    leaf['char'] = TUMBLING_CHARS[0]
+                # Cycle character every tumbling_speed seconds
+                if time() - leaf.get('last_tumble', 0) >= window.options.tumbling_speed:
+                    try:
+                        current_idx = TUMBLING_CHARS.index(leaf['char'])
+                        leaf['char'] = TUMBLING_CHARS[(current_idx + 1) % len(TUMBLING_CHARS)]
+                    except ValueError:
+                        leaf['char'] = TUMBLING_CHARS[0]
+                    leaf['last_tumble'] = time()
                 
                 # Check bounds
                 sx, sy = window.plane_to_screen(leaf['x'], leaf['y'])

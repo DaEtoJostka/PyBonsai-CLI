@@ -64,7 +64,8 @@ class Options:
 
     LEAVES_FALLING = False
     INTENSITY = 5
-    FALL_SPEED = 0.5
+    FALL_SPEED = 0.4
+    TUMBLING_SPEED = 0.5
 
     def __init__(self):
         #set the default values
@@ -98,6 +99,7 @@ class Options:
         self.leaves_falling = Options.LEAVES_FALLING
         self.intensity = Options.INTENSITY
         self.fall_speed = Options.FALL_SPEED
+        self.tumbling_speed = Options.TUMBLING_SPEED
 
     def get_default_window(self):
         #ensure the default values fit the current terminal size
@@ -155,6 +157,7 @@ def _print_help():
     --leaves-falling      animate leaves falling from the tree continuously
     --intensity           intensity of falling leaves [1-10, default {Options.INTENSITY}]
     --fall-speed          speed of falling animation [default {Options.FALL_SPEED}]
+    --tumbling-speed      speed of leaf character change [default {Options.TUMBLING_SPEED}]
 """
     USAGE = ("usage: pybonsai [-h] [--version] [-s SEED] [-i] [-w WAIT] "
              "[-c BRANCH_CHARS] [-C LEAF_CHARS] [-x WIDTH] [-y HEIGHT] [-t TYPE] [-b] "
@@ -162,7 +165,7 @@ def _print_help():
              "[-I] [-n] [-W WAIT_INFINITE] [--preset PRESET] [--branch-color COLOR] "
              "[-I] [-n] [-W WAIT_INFINITE] [--preset PRESET] [--branch-color COLOR] "
              "[--leaf-color COLOR] [--soil-color COLOR] [--leaves-falling] "
-             "[--intensity N] [--fall-speed S]")
+             "[--intensity N] [--fall-speed S] [--tumbling-speed T]")
 
     print()
     print(DESC)
@@ -212,6 +215,7 @@ def parse_cli_args():
     parser.add_argument('--leaves-falling', action='store_true')
     parser.add_argument('--intensity', type=int, default=options.intensity)
     parser.add_argument('--fall-speed', type=float, default=options.fall_speed)
+    parser.add_argument('--tumbling-speed', type=float, default=options.tumbling_speed)
 
     args = parser.parse_args()
 
@@ -241,6 +245,7 @@ def parse_cli_args():
     options.leaves_falling = args.leaves_falling
     options.intensity = args.intensity
     options.fall_speed = args.fall_speed
+    options.tumbling_speed = args.tumbling_speed
 
     if options.leaves_falling:
         options.infinite = False
