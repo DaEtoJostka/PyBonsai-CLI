@@ -67,6 +67,7 @@ class Options:
     INTENSITY = 5
     FALL_SPEED = 0.4
     TUMBLING_SPEED = 1
+    FALLING_CHARS = None  # None means use default TUMBLING_CHARS
 
     LOFI = False
     VOLUME = 50
@@ -105,6 +106,7 @@ class Options:
         self.intensity = Options.INTENSITY
         self.fall_speed = Options.FALL_SPEED
         self.tumbling_speed = Options.TUMBLING_SPEED
+        self.falling_chars = Options.FALLING_CHARS
 
         self.lofi = Options.LOFI
         self.volume = Options.VOLUME
@@ -167,6 +169,7 @@ def _print_help():
     -N, --intensity       [NEW] ✨ intensity of falling leaves [1-10, default {Options.INTENSITY}]
     -d, --fall-speed      [NEW] ✨ speed of falling animation [default {Options.FALL_SPEED}]
     -T, --tumbling-speed  [NEW] ✨ speed of leaf character change [default {Options.TUMBLING_SPEED}]
+    -K, --falling-chars   [NEW] ✨ custom characters for falling leaves (e.g. "01" for matrix-style)
 
     -R, --lofi            [NEW] ✨ play Lo-Fi radio stream in the terminal (requires ffplay)
     -V, --volume          [NEW] ✨ volume level for radio [0-100, default {Options.VOLUME}]
@@ -227,6 +230,7 @@ def parse_cli_args():
     parser.add_argument('-N', '--intensity', type=int, default=options.intensity)
     parser.add_argument('-d', '--fall-speed', type=float, default=options.fall_speed)
     parser.add_argument('-T', '--tumbling-speed', type=float, default=options.tumbling_speed)
+    parser.add_argument('-K', '--falling-chars', type=str, default=options.falling_chars)
 
     parser.add_argument('-R', '--lofi', action='store_true')
     parser.add_argument('-V', '--volume', type=int, default=options.volume)
@@ -261,6 +265,7 @@ def parse_cli_args():
     options.intensity = args.intensity
     options.fall_speed = args.fall_speed
     options.tumbling_speed = args.tumbling_speed
+    options.falling_chars = args.falling_chars
 
     options.lofi = args.lofi
     options.volume = args.volume

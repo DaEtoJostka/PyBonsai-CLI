@@ -8,12 +8,25 @@ from time import sleep, time
 from .draw import HIDE_CURSOR, SHOW_CURSOR
 
 
-TUMBLING_CHARS = ['.', ',', '-', "'", '`', '"', '`', "'", '-', ',']
+DEFAULT_TUMBLING_CHARS = ['.', ',', '-', "'", '`', '"', '`', "'", '-', ',']
 
 def animate_leaves_falling(window):
     """Animate leaves falling from the tree canopy."""
     if not window.leaf_points:
         return
+    
+    # Use custom falling chars if provided, otherwise use default
+    if window.options.falling_chars:
+        tumbling_chars = list(window.options.falling_chars)
+    else:
+        tumbling_chars = DEFAULT_TUMBLING_CHARS
+    
+    # Pre-calculate foliage screen positions (to protect only actual tree leaves)
+    foliage_screen_positions = set()
+    for lp in window.leaf_points:
+        sx, sy = window.plane_to_screen(lp[0], lp[1])
+        if 0 <= sx < window.height and 0 <= sy < window.width:
+            foliage_screen_positions.add((sx, sy))
     
     # Store static tree (without falling leaves overlay)
     static_tree = copy.deepcopy(window.chars)
@@ -40,12 +53,12 @@ def animate_leaves_falling(window):
                     falling.append({
                         'x': src[0],
                         'y': src[1],
-
-                        'char': random.choice(TUMBLING_CHARS),
+                        'char': random.choice(tumbling_chars),
                         'colour': window.choose_colour(window.options.leaf_colour),
                         'vx': random.uniform(-0.3, 0.3),
                         'vy': 0,
-                        'last_tumble': time()
+                        'last_tumble': time(),
+                        'tumbling_chars': tumbling_chars  # Store for this leaf
                     })
             
             # Clear previous leaves (Optimization: Clean only "dirty" pixels)
@@ -72,19 +85,20 @@ def animate_leaves_falling(window):
 
                 # Cycle character every tumbling_speed seconds
                 if time() - leaf.get('last_tumble', 0) >= window.options.tumbling_speed:
+                    chars = leaf['tumbling_chars']
                     try:
-                        current_idx = TUMBLING_CHARS.index(leaf['char'])
-                        leaf['char'] = TUMBLING_CHARS[(current_idx + 1) % len(TUMBLING_CHARS)]
+                        current_idx = chars.index(leaf['char'])
+                        leaf['char'] = chars[(current_idx + 1) % len(chars)]
                     except ValueError:
-                        leaf['char'] = TUMBLING_CHARS[0]
+                        leaf['char'] = chars[0]
                     leaf['last_tumble'] = time()
                 
                 # Check bounds
                 sx, sy = window.plane_to_screen(leaf['x'], leaf['y'])
                 
                 if 0 <= sx < window.height and 0 <= sy < window.width:
-                    # Only skip drawing if the character in the static tree is a foliage character
-                    is_foliage = any(c in static_tree[sx][sy] for c in window.options.leaf_chars)
+                    # Only skip drawing if this position is part of the tree foliage
+                    is_foliage = (sx, sy) in foliage_screen_positions
                     if not is_foliage:
                         coloured = window.colour_char(leaf['char'], leaf['colour'][0], leaf['colour'][1], leaf['colour'][2])
                         window.chars[sx][sy] = coloured
