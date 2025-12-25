@@ -61,7 +61,7 @@ def animate_leaves_falling(window):
                             "y": src[1],
                             "char": random.choice(tumbling_chars),
                             "colour": window.choose_colour(window.options.leaf_colour),
-                            "vx": random.uniform(-0.3, 0.3),
+                            "vx": random.uniform(-0.3, 0.3) + (window.options.wind * 2),
                             "vy": 0,
                             "last_tumble": time(),
                             "tumbling_chars": tumbling_chars,  # Store for this leaf
@@ -84,7 +84,7 @@ def animate_leaves_falling(window):
                 # Physics
                 leaf["vy"] -= gravity
                 leaf["vx"] *= drag
-                leaf["vx"] += random.uniform(-0.1, 0.1)
+                leaf["vx"] += (window.options.wind * 0.5) + random.uniform(-0.1, 0.1)
 
                 leaf["x"] += leaf["vx"]
                 leaf["y"] += leaf["vy"]

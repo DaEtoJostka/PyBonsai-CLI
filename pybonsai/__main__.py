@@ -36,7 +36,7 @@ from math import radians
 from os import get_terminal_size
 
 
-VERSION = "2.0.2"
+VERSION = "2.1.0"
 DESC = "PyBonsai procedurally generates ASCII art bonsai trees in your terminal.\nLeave a ⭐️ on GitHub: https://github.com/DaEtoJostka/PyBonsai-CLI"
 
 
@@ -72,6 +72,8 @@ class Options:
     LOFI = False
     VOLUME = 50
     RADIO_URL = None
+
+    WIND = 0.0
 
     def __init__(self):
         # set the default values
@@ -111,6 +113,8 @@ class Options:
         self.lofi = Options.LOFI
         self.volume = Options.VOLUME
         self.radio_url = Options.RADIO_URL
+
+        self.wind = Options.WIND
 
     def get_default_window(self):
         # ensure the default values fit the current terminal size
@@ -174,13 +178,15 @@ def _print_help():
     -R, --lofi            [NEW] ✨ play Lo-Fi radio stream in the terminal (requires ffplay)
     -V, --volume          [NEW] ✨ volume level for radio [0-100, default {Options.VOLUME}]
     -U, --radio-url       [NEW] ✨ custom radio stream URL
+
+    -M, --wind            [NEW] ✨ wind force for falling leaves (tilt) [default {Options.WIND}]
 """
     USAGE = (
         "usage: pybonsai [-h] [--version] [-s SEED] [-i] [-w WAIT] "
         "[-c BRANCH_CHARS] [-C LEAF_CHARS] [-x WIDTH] [-y HEIGHT] [-t TYPE] [-b] "
         "[-S START_LEN] [-L LEAF_LEN] [-l LAYERS] [-a ANGLE] [-o PATH] [-f] "
         "[-I] [-n] [-W WAIT_INFINITE] [-p PRESET] [-B COLOR] [-e COLOR] [-g COLOR] "
-        "[-F] [-N N] [-d S] [-T T] [-R] [-V N] [-U URL]"
+        "[-F] [-N N] [-d S] [-T T] [-M WIND] [-R] [-V N] [-U URL]"
     )
 
     print()
@@ -243,6 +249,8 @@ def parse_cli_args():
     parser.add_argument("-V", "--volume", type=int, default=options.volume)
     parser.add_argument("-U", "--radio-url", type=str, default=options.radio_url)
 
+    parser.add_argument("-M", "--wind", "--tilt", type=float, default=options.wind)
+
     args = parser.parse_args()
 
     # Update options with parsed arguments
@@ -279,6 +287,8 @@ def parse_cli_args():
     options.lofi = args.lofi
     options.volume = args.volume
     options.radio_url = args.radio_url
+
+    options.wind = args.wind
 
     if options.leaves_falling:
         options.infinite = False
