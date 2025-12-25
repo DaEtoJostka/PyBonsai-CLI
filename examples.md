@@ -16,6 +16,12 @@ A classic orange-leafed tree growing infinitely.
 pybonsai -p autumn -I -N 3
 ```
 ![](Images/exampls/autumn.gif)
+### 🌬️ Stormy Weather
+Add wind to make the leaves blow aggressively to the side.
+```bash
+pybonsai -p autumn -F -M -0.3 -N 10
+```
+![](Images/exampls/wind.gif)
 ### ❄️ Winter Night
 An icy white/blue tree that grows instantly, with slow-falling "snow".
 ```bash
