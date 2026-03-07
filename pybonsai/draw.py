@@ -1,5 +1,4 @@
 import math
-import random
 from time import sleep
 import re
 import os
