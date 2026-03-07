@@ -105,7 +105,7 @@ OPTIONS:
     -T, --tumbling-speed   speed of leaf character change [default {Options.TUMBLING_SPEED}]
     -K, --falling-chars    custom characters for falling leaves (e.g. "01" for matrix-style)
 
-    -R, --lofi [PRESET]    play a terminal radio preset; presets: lofi (default), classical, medieval, synthwave, sad, jazz
+    -R, --lofi [PRESET]    play a terminal radio preset; presets: lofi (default), classical (alias: 0), medieval (alias: 1), synthwave (alias: 2), sad (alias: 3), jazz (alias: 4)
     -V, --volume           volume level for radio [0-100, default {Options.VOLUME}]
     -U, --radio-url        custom radio stream URL
 ```

@@ -57,31 +57,31 @@ RADIO_PRESETS: Dict[str, RadioStation] = {
     "classical": RadioStation(
         url=DEFAULT_CLASSIC_URL,
         help="play a classical radio stream in the terminal",
-        aliases=("classical",),
+        aliases=("0",),
         requires_streamlink=True,
     ),
     "medieval": RadioStation(
         url=DEFAULT_MEDIEVAL_URL,
         help="play a medieval music stream in the terminal",
-        aliases=("medieval",),
+        aliases=("1",),
         requires_streamlink=True,
     ),
     "synthwave": RadioStation(
         url=DEFAULT_SYNTHWAVE_URL,
         help="play a synthwave music stream in the terminal",
-        aliases=("synthwave",),
+        aliases=("2",),
         requires_streamlink=True,
     ),
     "sad": RadioStation(
         url=DEFAULT_SAD_URL,
         help="play a sad music stream in the terminal",
-        aliases=("sad",),
+        aliases=("3",),
         requires_streamlink=True,
     ),
     "jazz": RadioStation(
         url=DEFAULT_JAZZ_URL,
         help="play a jazz music stream in the terminal",
-        aliases=("jazz",),
+        aliases=("4",),
         requires_streamlink=True,
     ),
 }
@@ -105,7 +105,7 @@ def normalise_station_name(station_name: Optional[str]) -> Optional[str]:
     if station_name is None:
         return None
 
-    normalised = station_name.strip().lower()
+    normalised = str(station_name).strip().lower()
     try:
         return RADIO_ALIASES[normalised]
     except KeyError as exc:

@@ -50,6 +50,12 @@ class CliParsingTests(unittest.TestCase):
         self.assertTrue(config.audio.enabled)
         self.assertEqual(config.audio.radio_url, radio.RADIO_PRESETS["medieval"].url)
 
+    def test_numeric_radio_preset_alias_sets_station_url(self):
+        config = parse_cli_args(["--lofi", "0"])
+
+        self.assertTrue(config.audio.enabled)
+        self.assertEqual(config.audio.radio_url, radio.RADIO_PRESETS["classical"].url)
+
     def test_custom_radio_url_enables_audio(self):
         config = parse_cli_args(["--radio-url", "https://example.com/live"])
 
@@ -73,7 +79,11 @@ class CliParsingTests(unittest.TestCase):
         self.assertIn("-R, --lofi [PRESET]", help_text)
         self.assertIn("play a terminal radio preset;", help_text)
         self.assertIn(
-            "presets: lofi (default), classical, medieval, synthwave, sad, jazz",
+            (
+                "presets: lofi (default), classical (alias: 0), "
+                "medieval (alias: 1), synthwave (alias: 2), "
+                "sad (alias: 3), jazz (alias: 4)"
+            ),
             help_text,
         )
         self.assertNotIn("(default: None)", help_text)
