@@ -19,8 +19,11 @@ except ImportError:
 
 
 DEFAULT_LOFI_URL = "https://www.youtube.com/watch?v=jfKfPfyJRdk"
-DEFAULT_MEDIEVAL_URL = "https://www.youtube.com/watch?v=jXAEIWcGXwE"
-DEFAULT_CLASSIC_URL = "https://stream.srg-ssr.ch/m/rsc_de/mp3_128"
+DEFAULT_MEDIEVAL_URL = "https://www.youtube.com/watch?v=IxPANmjPaek"
+DEFAULT_CLASSIC_URL = "https://www.youtube.com/watch?v=jXAEIWcGXwE"
+DEFAULT_SYNTHWAVE_URL = "https://www.youtube.com/watch?v=4xDzrJKXOOY"
+DEFAULT_SAD_URL = "https://www.youtube.com/watch?v=P6Segk8cr-c"
+DEFAULT_JAZZ_URL = "https://www.youtube.com/watch?v=A8jDx9TLMQc"
 DEFAULT_RADIO_PRESET = "lofi"
 STREAM_CHUNK_SIZE = 4096
 STREAMLINK_LOGGER_NAME = "streamlink"
@@ -54,11 +57,31 @@ RADIO_PRESETS: Dict[str, RadioStation] = {
     "classic": RadioStation(
         url=DEFAULT_CLASSIC_URL,
         help="play a classical radio stream in the terminal",
+        aliases=("classic",),
+        requires_streamlink=True,
     ),
     "medieval": RadioStation(
         url=DEFAULT_MEDIEVAL_URL,
         help="play a medieval music stream in the terminal",
         aliases=("medival",),
+        requires_streamlink=True,
+    ),
+    "synthwave": RadioStation(
+        url=DEFAULT_SYNTHWAVE_URL,
+        help="play a synthwave music stream in the terminal",
+        aliases=("synthwave",),
+        requires_streamlink=True,
+    ),
+    "sad": RadioStation(
+        url=DEFAULT_SAD_URL,
+        help="play a sad music stream in the terminal",
+        aliases=("sad",),
+        requires_streamlink=True,
+    ),
+    "jazz": RadioStation(
+        url=DEFAULT_JAZZ_URL,
+        help="play a jazz music stream in the terminal",
+        aliases=("jazz",),
         requires_streamlink=True,
     ),
 }
