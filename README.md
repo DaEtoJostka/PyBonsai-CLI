@@ -30,7 +30,7 @@ Use [pipx](https://pipx.pypa.io/stable/installation/) to install PyBonsai global
 ```
 pipx install pybonsai
 ```
-<img src="Images/demo.gif" style="max-width:100%;">
+<img src="Images/demo.gif" width="600">
 
 or using [uv](https://docs.astral.sh/uv/) to install in temporary, isolated environment:
 
