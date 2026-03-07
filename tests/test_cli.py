@@ -57,15 +57,36 @@ class CliParsingTests(unittest.TestCase):
         self.assertEqual(config.animation.mode, RunMode.FALLING_LEAVES)
         self.assertEqual(config.audio.radio_url, "https://example.com/live")
 
+    def test_help_groups_related_options(self):
+        help_text = build_parser().format_help()
+
+        self.assertIn("General options:", help_text)
+        self.assertIn("Tree options:", help_text)
+        self.assertIn("Rendering:", help_text)
+        self.assertIn("Colors:", help_text)
+        self.assertIn("Animation:", help_text)
+        self.assertIn("Audio:", help_text)
+
     def test_help_describes_radio_presets(self):
         help_text = " ".join(build_parser().format_help().split())
 
-        self.assertIn("-R [PRESET], --lofi [PRESET]", help_text)
+        self.assertIn("-R, --lofi [PRESET]", help_text)
         self.assertIn("play a terminal radio preset;", help_text)
         self.assertIn(
             "presets: lofi (default), classical, medieval, synthwave, sad, jazz",
             help_text,
         )
+        self.assertNotIn("(default: None)", help_text)
+        self.assertNotIn("(default: False)", help_text)
+
+    def test_help_caps_line_length_for_wide_terminals(self):
+        with patch(
+            "pybonsai.cli.shutil.get_terminal_size",
+            return_value=os.terminal_size((160, 50)),
+        ):
+            help_text = build_parser().format_help()
+
+        self.assertLessEqual(max(len(line) for line in help_text.splitlines()), 100)
 
     def test_conflicting_flags_raise_configuration_error(self):
         with self.assertRaises(ConfigurationError) as context:

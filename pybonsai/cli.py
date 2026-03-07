@@ -1,6 +1,7 @@
 """CLI parsing and mapping into structured config objects."""
 
 import argparse
+import shutil
 from typing import Optional, Sequence
 
 from . import colors
@@ -17,9 +18,44 @@ from .options import (
 
 
 class HelpFormatter(
-    argparse.ArgumentDefaultsHelpFormatter, argparse.RawTextHelpFormatter
+    argparse.ArgumentDefaultsHelpFormatter, argparse.RawDescriptionHelpFormatter
 ):
     """Keep help readable while still showing defaults."""
+
+    MAX_WIDTH = 100
+    MAX_HELP_POSITION = 36
+
+    def __init__(self, prog):
+        terminal_width = shutil.get_terminal_size(
+            fallback=(self.MAX_WIDTH, 24)
+        ).columns
+        width = min(terminal_width, self.MAX_WIDTH)
+        max_help_position = min(self.MAX_HELP_POSITION, max(24, width // 3))
+        super().__init__(prog, width=width, max_help_position=max_help_position)
+
+    def _format_action_invocation(self, action):
+        if not action.option_strings:
+            return super()._format_action_invocation(action)
+
+        if action.nargs == 0:
+            return ", ".join(action.option_strings)
+
+        default_metavar = self._get_default_metavar_for_optional(action)
+        args_string = self._format_args(action, default_metavar)
+        return f"{', '.join(action.option_strings)} {args_string}"
+
+    def _get_help_string(self, action):
+        if action.help is None or "%(default)" in action.help:
+            return action.help
+
+        if (
+            action.default is argparse.SUPPRESS
+            or action.default is None
+            or action.default is False
+        ):
+            return action.help
+
+        return f"{action.help} (default: %(default)s)"
 
 
 def _parse_tree_type(value):
@@ -39,164 +75,232 @@ def _parse_radio_preset(value):
 def build_parser(defaults: Optional[AppConfig] = None) -> argparse.ArgumentParser:
     defaults = defaults or AppConfig()
     tree_types_help = ", ".join(
-        f'"{label}":{int(tree_type)}' for tree_type, label in TREE_TYPE_LABELS.items()
+        f"{label} ({int(tree_type)})" for tree_type, label in TREE_TYPE_LABELS.items()
     )
 
     parser = argparse.ArgumentParser(
         description=DESCRIPTION,
         formatter_class=HelpFormatter,
         prog="pybonsai",
+        add_help=False,
     )
-    parser.add_argument("--version", action="version", version=f"PyBonsai version {VERSION}")
-    parser.add_argument("-s", "--seed", type=int, help="seed for the random number generator")
-    parser.add_argument(
-        "-i",
-        "--instant",
-        action="store_true",
-        help="display the finished tree immediately",
+    general_group = parser.add_argument_group("General options")
+    tree_group = parser.add_argument_group("Tree options")
+    render_group = parser.add_argument_group("Rendering")
+    colors_group = parser.add_argument_group("Colors")
+    animation_group = parser.add_argument_group("Animation")
+    audio_group = parser.add_argument_group("Audio")
+
+    general_group.add_argument(
+        "-h", "--help", action="help", help="show this help message and exit"
     )
-    parser.add_argument(
-        "-w",
-        "--wait",
-        type=float,
-        default=defaults.render.wait_time,
-        help="time delay between drawing characters when not in instant mode",
+    general_group.add_argument(
+        "--version", action="version", version=f"PyBonsai version {VERSION}"
     )
-    parser.add_argument(
-        "-c",
-        "--branch-chars",
-        type=str,
-        default=defaults.style.branch_chars,
-        help="string of chars randomly chosen for branches",
-    )
-    parser.add_argument(
-        "-C",
-        "--leaf-chars",
-        type=str,
-        default=defaults.style.leaf_chars,
-        help="string of chars randomly chosen for leaves",
-    )
-    parser.add_argument(
-        "-x",
-        "--width",
+    general_group.add_argument(
+        "-s",
+        "--seed",
         type=int,
-        default=defaults.render.width,
-        help="maximum width of the tree",
+        metavar="INT",
+        help="seed for the random number generator",
     )
-    parser.add_argument(
-        "-y",
-        "--height",
-        type=int,
-        default=defaults.render.height,
-        help="maximum height of the tree",
-    )
-    parser.add_argument(
-        "-t",
-        "--type",
-        type=_parse_tree_type,
-        help=f'tree type [0-3 or name]: {tree_types_help}',
-    )
-    parser.add_argument(
-        "-b",
-        "--bonsai",
-        action="store_true",
-        help="enable bonsai preset settings for a smaller tree",
-    )
-    parser.add_argument("-S", "--start-len", type=int, help="length of the root branch")
-    parser.add_argument("-L", "--leaf-len", type=int, help="length of each leaf")
-    parser.add_argument(
-        "-l",
-        "--layers",
-        type=int,
-        help="number of branch layers: more means more branches",
-    )
-    parser.add_argument(
-        "-a",
-        "--angle",
-        type=int,
-        help="mean angle of branches to their parent, in degrees",
-    )
-    parser.add_argument(
+    general_group.add_argument(
         "-o",
         "--save",
         type=str,
         metavar="PATH",
         help="save the tree to a text file",
     )
-    parser.add_argument(
+
+    tree_group.add_argument(
+        "-t",
+        "--type",
+        type=_parse_tree_type,
+        metavar="TYPE",
+        help=f"tree type [0-3 or name]: {tree_types_help}",
+    )
+    tree_group.add_argument(
+        "-b",
+        "--bonsai",
+        action="store_true",
+        help="enable bonsai preset settings for a smaller tree",
+    )
+    tree_group.add_argument(
+        "-S",
+        "--start-len",
+        type=int,
+        metavar="LENGTH",
+        help="length of the root branch",
+    )
+    tree_group.add_argument(
+        "-L",
+        "--leaf-len",
+        type=int,
+        metavar="LENGTH",
+        help="length of each leaf",
+    )
+    tree_group.add_argument(
+        "-l",
+        "--layers",
+        type=int,
+        metavar="COUNT",
+        help="number of branch layers: more means more branches",
+    )
+    tree_group.add_argument(
+        "-a",
+        "--angle",
+        type=int,
+        metavar="DEGREES",
+        help="mean angle of branches to their parent, in degrees",
+    )
+    tree_group.add_argument(
+        "-c",
+        "--branch-chars",
+        type=str,
+        default=defaults.style.branch_chars,
+        metavar="CHARS",
+        help="string of chars randomly chosen for branches",
+    )
+    tree_group.add_argument(
+        "-C",
+        "--leaf-chars",
+        type=str,
+        default=defaults.style.leaf_chars,
+        metavar="CHARS",
+        help="string of chars randomly chosen for leaves",
+    )
+
+    render_group.add_argument(
+        "-i",
+        "--instant",
+        action="store_true",
+        help="display the finished tree immediately",
+    )
+    render_group.add_argument(
+        "-w",
+        "--wait",
+        type=float,
+        default=defaults.render.wait_time,
+        metavar="SECONDS",
+        help="time delay between drawing characters when not in instant mode",
+    )
+    render_group.add_argument(
+        "-x",
+        "--width",
+        type=int,
+        default=defaults.render.width,
+        metavar="WIDTH",
+        help="maximum width of the tree",
+    )
+    render_group.add_argument(
+        "-y",
+        "--height",
+        type=int,
+        default=defaults.render.height,
+        metavar="HEIGHT",
+        help="maximum height of the tree",
+    )
+    render_group.add_argument(
         "-f",
         "--fixed-window",
         action="store_true",
         help="do not allow window height to increase when tree grows off screen",
     )
-    parser.add_argument(
+
+    colors_group.add_argument(
+        "-p",
+        "--preset",
+        type=str,
+        metavar="PRESET",
+        help=f'apply a color preset: {", ".join(colors.PRESETS.keys())}',
+    )
+    colors_group.add_argument(
+        "-B",
+        "--branch-color",
+        type=str,
+        metavar="COLOR",
+        help='custom color for branches, e.g. "red", "#553311", or "100,60,30"',
+    )
+    colors_group.add_argument(
+        "-e",
+        "--leaf-color",
+        type=str,
+        metavar="COLOR",
+        help="custom color for leaves",
+    )
+    colors_group.add_argument(
+        "-g", "--soil-color", type=str, metavar="COLOR", help="custom color for soil"
+    )
+
+    animation_group.add_argument(
         "-I",
         "--infinite",
         action="store_true",
         help="run in infinite mode, infinitely growing the same tree",
     )
-    parser.add_argument(
+    animation_group.add_argument(
         "-n",
         "--new",
         action="store_true",
         help="run in infinite mode, automatically growing new trees",
     )
-    parser.add_argument(
+    animation_group.add_argument(
         "-W",
         "--wait-infinite",
         type=float,
         default=defaults.animation.infinite_wait_time,
+        metavar="SECONDS",
         help="time delay between drawing in infinite mode",
     )
-    parser.add_argument(
-        "-p",
-        "--preset",
-        type=str,
-        help=f'apply a color preset: {", ".join(colors.PRESETS.keys())}',
-    )
-    parser.add_argument(
-        "-B",
-        "--branch-color",
-        type=str,
-        help='custom color for branches, e.g. "red", "#553311", or "100,60,30"',
-    )
-    parser.add_argument("-e", "--leaf-color", type=str, help="custom color for leaves")
-    parser.add_argument("-g", "--soil-color", type=str, help="custom color for soil")
-    parser.add_argument(
+    animation_group.add_argument(
         "-F",
         "--leaves-falling",
         action="store_true",
         help="animate leaves falling from the tree continuously",
     )
-    parser.add_argument(
+    animation_group.add_argument(
         "-N",
         "--intensity",
         type=int,
         default=defaults.animation.intensity,
+        metavar="LEVEL",
         help="intensity of falling leaves [1-10]",
     )
-    parser.add_argument(
+    animation_group.add_argument(
         "-d",
         "--fall-speed",
         type=float,
         default=defaults.animation.fall_speed,
+        metavar="SPEED",
         help="speed of the falling animation",
     )
-    parser.add_argument(
+    animation_group.add_argument(
         "-T",
         "--tumbling-speed",
         type=float,
         default=defaults.animation.tumbling_speed,
+        metavar="SPEED",
         help="speed of leaf character changes while falling",
     )
-    parser.add_argument(
+    animation_group.add_argument(
         "-K",
         "--falling-chars",
         type=str,
         default=defaults.animation.falling_chars,
+        metavar="CHARS",
         help='custom characters for falling leaves, e.g. "01" for matrix-style',
     )
-    radio_group = parser.add_mutually_exclusive_group()
+    animation_group.add_argument(
+        "-M",
+        "--wind",
+        "--tilt",
+        type=float,
+        default=defaults.animation.wind,
+        metavar="FORCE",
+        help="wind force for falling leaves",
+    )
+
+    radio_group = audio_group.add_mutually_exclusive_group()
     radio_group.add_argument(
         "-R",
         "--lofi",
@@ -209,26 +313,20 @@ def build_parser(defaults: Optional[AppConfig] = None) -> argparse.ArgumentParse
             f"presets: {radio.describe_presets()}"
         ),
     )
-    parser.add_argument(
+    audio_group.add_argument(
         "-V",
         "--volume",
         type=int,
         default=defaults.audio.volume,
+        metavar="LEVEL",
         help="volume level for radio [0-100]",
     )
     radio_group.add_argument(
         "-U",
         "--radio-url",
         type=str,
+        metavar="URL",
         help="custom radio stream URL",
-    )
-    parser.add_argument(
-        "-M",
-        "--wind",
-        "--tilt",
-        type=float,
-        default=defaults.animation.wind,
-        help="wind force for falling leaves",
     )
     return parser
 
