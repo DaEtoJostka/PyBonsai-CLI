@@ -16,6 +16,10 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
 ]
+dependencies = [
+    "streamlink>=7,<8",
+    "yt-dlp>=2025.10.14",
+]
 
 [project.scripts]
 pybonsai = "pybonsai.__main__:main"

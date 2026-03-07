@@ -4,6 +4,7 @@ import argparse
 from typing import Optional, Sequence
 
 from . import colors
+from . import radio
 from .errors import ConfigurationError
 from .metadata import DESCRIPTION, VERSION
 from .options import (
@@ -25,6 +26,13 @@ def _parse_tree_type(value):
     try:
         return normalise_tree_type(value)
     except ValueError as exc:
+        raise argparse.ArgumentTypeError(str(exc)) from exc
+
+
+def _parse_radio_preset(value):
+    try:
+        return radio.normalise_station_name(value)
+    except radio.RadioError as exc:
         raise argparse.ArgumentTypeError(str(exc)) from exc
 
 
@@ -188,11 +196,18 @@ def build_parser(defaults: Optional[AppConfig] = None) -> argparse.ArgumentParse
         default=defaults.animation.falling_chars,
         help='custom characters for falling leaves, e.g. "01" for matrix-style',
     )
-    parser.add_argument(
+    radio_group = parser.add_mutually_exclusive_group()
+    radio_group.add_argument(
         "-R",
         "--lofi",
-        action="store_true",
-        help="play Lo-Fi radio stream in the terminal (requires ffplay)",
+        nargs="?",
+        const=radio.DEFAULT_RADIO_PRESET,
+        type=_parse_radio_preset,
+        metavar="STYLE",
+        help=(
+            "play a Lo-Fi/live radio stream in the terminal; "
+            f"presets: {radio.describe_presets()}"
+        ),
     )
     parser.add_argument(
         "-V",
@@ -201,11 +216,10 @@ def build_parser(defaults: Optional[AppConfig] = None) -> argparse.ArgumentParse
         default=defaults.audio.volume,
         help="volume level for radio [0-100]",
     )
-    parser.add_argument(
+    radio_group.add_argument(
         "-U",
         "--radio-url",
         type=str,
-        default=defaults.audio.radio_url,
         help="custom radio stream URL",
     )
     parser.add_argument(
@@ -239,6 +253,8 @@ def _resolve_mode(args) -> RunMode:
 
 
 def _validate_args(args):
+    audio_requested = bool(args.lofi or args.radio_url)
+
     if args.instant and args.wait > 0:
         raise ConfigurationError(
             "Conflicting flags: --instant and --wait cannot be used together."
@@ -249,10 +265,10 @@ def _validate_args(args):
             "Conflicting flags: --infinite/--new and --leaves-falling are mutually exclusive."
         )
 
-    if args.save and (args.infinite or args.new or args.leaves_falling or args.lofi):
+    if args.save and (args.infinite or args.new or args.leaves_falling or audio_requested):
         raise ConfigurationError(
             "Conflicting flags: --save is not supported in animation modes "
-            "(--infinite, --new, --leaves-falling, or --lofi)."
+            "(--infinite, --new, --leaves-falling, or radio playback)."
         )
 
 
@@ -294,9 +310,9 @@ def parse_cli_args(argv: Optional[Sequence[str]] = None) -> AppConfig:
     config.animation.tumbling_speed = args.tumbling_speed
     config.animation.falling_chars = args.falling_chars
     config.animation.wind = args.wind
-    config.audio.enabled = args.lofi
+    config.audio.enabled = bool(args.lofi or args.radio_url)
     config.audio.volume = args.volume
-    config.audio.radio_url = args.radio_url
+    config.audio.radio_url = args.radio_url or radio.resolve_station_url(args.lofi)
     config.animation.mode = _resolve_mode(args)
 
     if args.bonsai:

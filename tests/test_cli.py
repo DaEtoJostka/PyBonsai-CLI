@@ -6,6 +6,7 @@ from unittest.mock import patch
 
 from pybonsai.app import main
 from pybonsai.cli import parse_cli_args
+from pybonsai import radio
 from pybonsai.errors import ConfigurationError
 from pybonsai.options import RunMode, TreeType, get_default_window_size
 
@@ -30,10 +31,31 @@ class CliParsingTests(unittest.TestCase):
         self.assertTrue(config.user_set_type)
 
     def test_lofi_defaults_to_falling_leaves(self):
-        config = parse_cli_args(["-R"])
+        config = parse_cli_args(["--lofi"])
 
         self.assertTrue(config.audio.enabled)
         self.assertEqual(config.animation.mode, RunMode.FALLING_LEAVES)
+        self.assertEqual(config.audio.radio_url, radio.RADIO_PRESETS["lofi"].url)
+
+    def test_named_radio_preset_sets_station_url(self):
+        config = parse_cli_args(["--lofi", "classic"])
+
+        self.assertTrue(config.audio.enabled)
+        self.assertEqual(config.animation.mode, RunMode.FALLING_LEAVES)
+        self.assertEqual(config.audio.radio_url, radio.RADIO_PRESETS["classic"].url)
+
+    def test_radio_preset_alias_is_normalised(self):
+        config = parse_cli_args(["-R", "medival"])
+
+        self.assertTrue(config.audio.enabled)
+        self.assertEqual(config.audio.radio_url, radio.RADIO_PRESETS["medieval"].url)
+
+    def test_custom_radio_url_enables_audio(self):
+        config = parse_cli_args(["--radio-url", "https://example.com/live"])
+
+        self.assertTrue(config.audio.enabled)
+        self.assertEqual(config.animation.mode, RunMode.FALLING_LEAVES)
+        self.assertEqual(config.audio.radio_url, "https://example.com/live")
 
     def test_conflicting_flags_raise_configuration_error(self):
         with self.assertRaises(ConfigurationError) as context:
@@ -46,6 +68,26 @@ class CliParsingTests(unittest.TestCase):
             parse_cli_args(["-B", "not-a-color"])
 
         self.assertIn("Error parsing colors", str(context.exception))
+
+
+class RadioHelperTests(unittest.TestCase):
+    def test_stream_to_url_prefers_manifest_url(self):
+        class FakeStream:
+            def to_manifest_url(self):
+                return "https://example.com/master.m3u8"
+
+            def to_url(self):
+                return "https://example.com/media.m3u8"
+
+        self.assertEqual(
+            radio._stream_to_url(FakeStream()),
+            "https://example.com/master.m3u8",
+        )
+
+    def test_youtube_urls_use_ytdlp_path(self):
+        self.assertTrue(
+            radio._requires_ytdlp("https://www.youtube.com/watch?v=jfKfPfyJRdk")
+        )
 
 
 class MainSmokeTests(unittest.TestCase):
