@@ -54,16 +54,16 @@ RADIO_PRESETS: Dict[str, RadioStation] = {
         help="play the default Lo-Fi radio stream in the terminal",
         short_flag="-R",
     ),
-    "classic": RadioStation(
+    "classical": RadioStation(
         url=DEFAULT_CLASSIC_URL,
         help="play a classical radio stream in the terminal",
-        aliases=("classic",),
+        aliases=("classical",),
         requires_streamlink=True,
     ),
     "medieval": RadioStation(
         url=DEFAULT_MEDIEVAL_URL,
         help="play a medieval music stream in the terminal",
-        aliases=("medival",),
+        aliases=("medieval",),
         requires_streamlink=True,
     ),
     "synthwave": RadioStation(
@@ -115,7 +115,22 @@ def normalise_station_name(station_name: Optional[str]) -> Optional[str]:
 
 
 def describe_presets() -> str:
-    return ", ".join(RADIO_PRESETS)
+    preset_descriptions = []
+    for preset_name, preset in RADIO_PRESETS.items():
+        details = []
+        if preset_name == DEFAULT_RADIO_PRESET:
+            details.append("default")
+
+        aliases = tuple(alias for alias in preset.aliases if alias != preset_name)
+        if aliases:
+            details.append(f"alias: {', '.join(aliases)}")
+
+        if details:
+            preset_descriptions.append(f"{preset_name} ({'; '.join(details)})")
+        else:
+            preset_descriptions.append(preset_name)
+
+    return ", ".join(preset_descriptions)
 
 
 def resolve_station_url(station_name: Optional[str]) -> Optional[str]:

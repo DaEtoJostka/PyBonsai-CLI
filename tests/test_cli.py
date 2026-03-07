@@ -5,7 +5,7 @@ import unittest
 from unittest.mock import patch
 
 from pybonsai.app import main
-from pybonsai.cli import parse_cli_args
+from pybonsai.cli import build_parser, parse_cli_args
 from pybonsai import radio
 from pybonsai.errors import ConfigurationError
 from pybonsai.options import RunMode, TreeType, get_default_window_size
@@ -38,14 +38,14 @@ class CliParsingTests(unittest.TestCase):
         self.assertEqual(config.audio.radio_url, radio.RADIO_PRESETS["lofi"].url)
 
     def test_named_radio_preset_sets_station_url(self):
-        config = parse_cli_args(["--lofi", "classic"])
+        config = parse_cli_args(["--lofi", "classical"])
 
         self.assertTrue(config.audio.enabled)
         self.assertEqual(config.animation.mode, RunMode.FALLING_LEAVES)
-        self.assertEqual(config.audio.radio_url, radio.RADIO_PRESETS["classic"].url)
+        self.assertEqual(config.audio.radio_url, radio.RADIO_PRESETS["classical"].url)
 
-    def test_radio_preset_alias_is_normalised(self):
-        config = parse_cli_args(["-R", "medival"])
+    def test_radio_preset_name_is_normalised(self):
+        config = parse_cli_args(["-R", "MeDieVal"])
 
         self.assertTrue(config.audio.enabled)
         self.assertEqual(config.audio.radio_url, radio.RADIO_PRESETS["medieval"].url)
@@ -56,6 +56,16 @@ class CliParsingTests(unittest.TestCase):
         self.assertTrue(config.audio.enabled)
         self.assertEqual(config.animation.mode, RunMode.FALLING_LEAVES)
         self.assertEqual(config.audio.radio_url, "https://example.com/live")
+
+    def test_help_describes_radio_presets(self):
+        help_text = " ".join(build_parser().format_help().split())
+
+        self.assertIn("-R [PRESET], --lofi [PRESET]", help_text)
+        self.assertIn("play a terminal radio preset;", help_text)
+        self.assertIn(
+            "presets: lofi (default), classical, medieval, synthwave, sad, jazz",
+            help_text,
+        )
 
     def test_conflicting_flags_raise_configuration_error(self):
         with self.assertRaises(ConfigurationError) as context:

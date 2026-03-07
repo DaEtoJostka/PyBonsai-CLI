@@ -203,9 +203,9 @@ def build_parser(defaults: Optional[AppConfig] = None) -> argparse.ArgumentParse
         nargs="?",
         const=radio.DEFAULT_RADIO_PRESET,
         type=_parse_radio_preset,
-        metavar="STYLE",
+        metavar="PRESET",
         help=(
-            "play a Lo-Fi/live radio stream in the terminal; "
+            "play a terminal radio preset; "
             f"presets: {radio.describe_presets()}"
         ),
     )
