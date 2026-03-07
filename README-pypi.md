@@ -1,4 +1,4 @@
-# PyBonsai-CLI 🌴
+# PyBonsai-CLI 🪴
 
 PyBonsai is a Python script that generates procedural ASCII art trees in the comfort of your terminal.
 
@@ -13,7 +13,7 @@ This is a fork of [PyBonsai](https://github.com/Ben-Edwards44/PyBonsai) with som
 -  True bonsai 🌳
 -  Preset change 🎨
 -  Falling leaves animation 🍃
--  Lofi radio 📻
+-  Lofi radio 📻 [UPDATED] ✨
 
 About other features read more on [examples.md](https://github.com/DaEtoJostka/PyBonsai-CLI/blob/main/examples.md).
 
