@@ -1,10 +1,11 @@
 import math
-from . import utils
 import random
 from time import sleep
 import re
 import sys
 import os
+
+from .geometry import Line
 
 
 # ANSI escape codes (https://en.wikipedia.org/wiki/ANSI_escape_code)
@@ -282,7 +283,7 @@ class TerminalWindow:
             self.increase_height(abs(room_from_top))
 
     def draw_line(self, start, end, colour, width):
-        mid_line = utils.Line()
+        mid_line = Line()
         mid_line.set_end_points(start, end)
 
         char = self.get_line_char(mid_line)

@@ -1,6 +1,7 @@
 import math
-from . import utils
 import random
+
+from .geometry import Vector
 
 
 class Tree:
@@ -423,14 +424,14 @@ class Leaves:
         self.options = options
 
     def draw(self):
-        g = utils.Vector(0, -1)
+        g = Vector(0, -1)
 
         for _ in range(Leaves.NUM_LEAVES):
-            vel = utils.Vector(
+            vel = Vector(
                 random.uniform(-1, 1), random.uniform(-1, 1)
             )  # random starting velocity for the leaves to step along
             vel.normalise()
-            pos = utils.Vector(self.branch_x, self.branch_y)
+            pos = Vector(self.branch_x, self.branch_y)
 
             for i in range(self.options.leaf_len):
                 pos += vel

@@ -1,6 +1,19 @@
-"""
-Handles color definitions, parsing, and presets for PyBonsai.
-"""
+"""Color definitions, parsing helpers, and presets for PyBonsai."""
+
+COLOR_NAMES = {
+    "red": (255, 0, 0),
+    "green": (0, 255, 0),
+    "blue": (0, 0, 255),
+    "white": (255, 255, 255),
+    "black": (0, 0, 0),
+    "yellow": (255, 255, 0),
+    "cyan": (0, 255, 255),
+    "magenta": (255, 0, 255),
+    "pink": (255, 192, 203),
+    "orange": (255, 165, 0),
+    "purple": (128, 0, 128),
+    "brown": (165, 42, 42),
+}
 
 
 def parse_color(color_string):
@@ -15,22 +28,6 @@ def parse_color(color_string):
         raise ValueError("Empty color string")
 
     color_string = color_string.strip().lower()
-
-    # Basic color names map
-    COLOR_NAMES = {
-        "red": (255, 0, 0),
-        "green": (0, 255, 0),
-        "blue": (0, 0, 255),
-        "white": (255, 255, 255),
-        "black": (0, 0, 0),
-        "yellow": (255, 255, 0),
-        "cyan": (0, 255, 255),
-        "magenta": (255, 0, 255),
-        "pink": (255, 192, 203),
-        "orange": (255, 165, 0),
-        "purple": (128, 0, 128),
-        "brown": (165, 42, 42),
-    }
 
     if color_string in COLOR_NAMES:
         return COLOR_NAMES[color_string]
@@ -93,3 +90,20 @@ PRESETS = {
         "soil_colour": ((0, 0), (100, 150), (0, 0)),
     },
 }
+
+
+def get_preset(preset_name):
+    if not preset_name:
+        return None
+    return PRESETS.get(preset_name.strip().lower())
+
+
+def apply_preset(options, preset_name):
+    preset = get_preset(preset_name)
+    if preset is None:
+        return False
+
+    options.branch_colour = preset.get("branch_colour", options.branch_colour)
+    options.leaf_colour = preset.get("leaf_colour", options.leaf_colour)
+    options.soil_colour = preset.get("soil_colour", options.soil_colour)
+    return True
