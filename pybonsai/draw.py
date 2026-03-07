@@ -2,7 +2,6 @@ import math
 import random
 from time import sleep
 import re
-import sys
 import os
 
 from .geometry import Line
@@ -22,11 +21,13 @@ class TerminalWindow:
 
     BACKGROUND_CHAR = " "
 
-    def __init__(self, width, height, options):
+    def __init__(self, width, height, config, output=None):
         self.width = width
         self.height = height
 
-        self.options = options
+        self.config = config
+        self.options = config
+        self.output = output
 
         self.chars = [
             [TerminalWindow.BACKGROUND_CHAR for _ in range(width)]
@@ -69,24 +70,16 @@ class TerminalWindow:
         ]
 
     def clear_screen(self):
-        print("\033[2J", end="")
+        if self.output is not None:
+            self.output.clear_screen()
 
     def draw(self):
-        lines = ["".join(row) for row in self.chars]
-        output = "\n".join(lines)
-
-        sys.stdout.write(output)
-        sys.stdout.write(
-            f"\033[{self.height - 1}A\033[G"
-        )  # Move up (height-1) lines and to start of line
-        sys.stdout.flush()
-
-        self.needs_clear = True
+        if self.output is not None:
+            self.output.render_window(self)
 
     def reset_cursor(self):
-        # cursor will have been left at the top from drawing, so we need to place it back at the bottom
-        sys.stdout.write(f"\033[{self.height - 1}B\r\n")
-        sys.stdout.flush()
+        if self.output is not None:
+            self.output.reset_cursor(self.height)
 
     def plane_to_screen(self, x, y):
         # convert cartesian coords to array indices
@@ -109,7 +102,7 @@ class TerminalWindow:
         return scaled_x, scaled_y
 
     def increase_height(self, delta_height):
-        if self.options.fixed_window:
+        if self.config.render.fixed_window:
             return False
 
         # Don't grow beyond terminal height to prevent scrolling artifacts
@@ -148,11 +141,11 @@ class TerminalWindow:
         self.chars[x][y] = coloured
 
     def set_char_wait(self, x, y, char, colour, is_screen_coords, wait_time):
-        # in non instant mode, we want to draw each new character after it is set
         self.set_char_instant(x, y, char, colour, is_screen_coords)
 
-        self.draw()
-        sleep(wait_time)
+        if self.output is not None:
+            self.draw()
+            sleep(wait_time)
 
     def get_line_char(self, line):
         theta = line.get_theta()
@@ -171,13 +164,12 @@ class TerminalWindow:
 
     def choose_colour(self, colour):
         if isinstance(colour[0], int):
-            # the colour is not a range, so no choice must be made
             return colour
         elif len(colour[0]) == 2:
-            # colour should be random with rgb values in the given range
             rand_colour = []
+            rng = self.config.random
             for lower, upper in colour:
-                value = random.randint(lower, upper)
+                value = rng.randint(lower, upper)
                 rand_colour.append(value)
 
             return rand_colour
@@ -207,14 +199,14 @@ class TerminalWindow:
                 if i >= len(dists):
                     break
 
-                if random.uniform(0, 1) < CHAR_THRESHOLD:
-                    chosen_char = random.choice(self.options.branch_chars)
+                if self.config.random.uniform(0, 1) < CHAR_THRESHOLD:
+                    chosen_char = self.config.random.choice(self.config.style.branch_chars)
                 else:
                     chosen_char = char
 
                 chosen_colour = self.choose_colour(colour)
 
-                if self.options.instant:
+                if self.config.render.instant:
                     self.set_char_instant(
                         inx1, dists[i][1], chosen_char, chosen_colour, True
                     )
@@ -225,7 +217,7 @@ class TerminalWindow:
                         chosen_char,
                         chosen_colour,
                         True,
-                        self.options.wait_time,
+                        self.config.render.wait_time,
                     )
 
     def draw_shallow_line(self, start, end, colour, width, char, mid_line):
@@ -251,14 +243,14 @@ class TerminalWindow:
                 if i >= len(dists):
                     break
 
-                if random.uniform(0, 1) < CHAR_THRESHOLD:
-                    chosen_char = random.choice(self.options.branch_chars)
+                if self.config.random.uniform(0, 1) < CHAR_THRESHOLD:
+                    chosen_char = self.config.random.choice(self.config.style.branch_chars)
                 else:
                     chosen_char = char
 
                 chosen_colour = self.choose_colour(colour)
 
-                if self.options.instant:
+                if self.config.render.instant:
                     self.set_char_instant(
                         dists[i][1], inx2, chosen_char, chosen_colour, True
                     )
@@ -269,7 +261,7 @@ class TerminalWindow:
                         chosen_char,
                         chosen_colour,
                         True,
-                        self.options.wait_time,
+                        self.config.render.wait_time,
                     )
 
     def check_line_bounds(self, start, end):

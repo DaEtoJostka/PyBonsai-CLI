@@ -1,28 +1,35 @@
-"""CLI parsing and option mapping for PyBonsai."""
+"""CLI parsing and mapping into structured config objects."""
 
 import argparse
-from math import radians
 from typing import Optional, Sequence
 
 from . import colors
+from .errors import ConfigurationError
 from .metadata import DESCRIPTION, VERSION
 from .options import (
-    DEFAULT_ANGLE_MEAN_DEGREES,
-    Options,
+    AppConfig,
+    RunMode,
     TREE_TYPE_LABELS,
     TreeType,
+    normalise_tree_type,
 )
 
 
 class HelpFormatter(
     argparse.ArgumentDefaultsHelpFormatter, argparse.RawTextHelpFormatter
 ):
-    """Keep help readable while still showing default values."""
+    """Keep help readable while still showing defaults."""
 
 
-def build_parser(defaults: Optional[Options] = None) -> argparse.ArgumentParser:
-    defaults = defaults or Options()
+def _parse_tree_type(value):
+    try:
+        return normalise_tree_type(value)
+    except ValueError as exc:
+        raise argparse.ArgumentTypeError(str(exc)) from exc
 
+
+def build_parser(defaults: Optional[AppConfig] = None) -> argparse.ArgumentParser:
+    defaults = defaults or AppConfig()
     tree_types_help = ", ".join(
         f'"{label}":{int(tree_type)}' for tree_type, label in TREE_TYPE_LABELS.items()
     )
@@ -44,43 +51,42 @@ def build_parser(defaults: Optional[Options] = None) -> argparse.ArgumentParser:
         "-w",
         "--wait",
         type=float,
-        default=defaults.wait_time,
+        default=defaults.render.wait_time,
         help="time delay between drawing characters when not in instant mode",
     )
     parser.add_argument(
         "-c",
         "--branch-chars",
         type=str,
-        default=defaults.branch_chars,
+        default=defaults.style.branch_chars,
         help="string of chars randomly chosen for branches",
     )
     parser.add_argument(
         "-C",
         "--leaf-chars",
         type=str,
-        default=defaults.leaf_chars,
+        default=defaults.style.leaf_chars,
         help="string of chars randomly chosen for leaves",
     )
     parser.add_argument(
         "-x",
         "--width",
         type=int,
-        default=defaults.window_width,
+        default=defaults.render.width,
         help="maximum width of the tree",
     )
     parser.add_argument(
         "-y",
         "--height",
         type=int,
-        default=defaults.window_height,
+        default=defaults.render.height,
         help="maximum height of the tree",
     )
     parser.add_argument(
         "-t",
         "--type",
-        type=int,
-        choices=range(len(TreeType)),
-        help=f'tree type [0-3]: {tree_types_help}',
+        type=_parse_tree_type,
+        help=f'tree type [0-3 or name]: {tree_types_help}',
     )
     parser.add_argument(
         "-b",
@@ -131,7 +137,7 @@ def build_parser(defaults: Optional[Options] = None) -> argparse.ArgumentParser:
         "-W",
         "--wait-infinite",
         type=float,
-        default=defaults.infinite_wait_time,
+        default=defaults.animation.infinite_wait_time,
         help="time delay between drawing in infinite mode",
     )
     parser.add_argument(
@@ -158,28 +164,28 @@ def build_parser(defaults: Optional[Options] = None) -> argparse.ArgumentParser:
         "-N",
         "--intensity",
         type=int,
-        default=defaults.intensity,
+        default=defaults.animation.intensity,
         help="intensity of falling leaves [1-10]",
     )
     parser.add_argument(
         "-d",
         "--fall-speed",
         type=float,
-        default=defaults.fall_speed,
+        default=defaults.animation.fall_speed,
         help="speed of the falling animation",
     )
     parser.add_argument(
         "-T",
         "--tumbling-speed",
         type=float,
-        default=defaults.tumbling_speed,
+        default=defaults.animation.tumbling_speed,
         help="speed of leaf character changes while falling",
     )
     parser.add_argument(
         "-K",
         "--falling-chars",
         type=str,
-        default=defaults.falling_chars,
+        default=defaults.animation.falling_chars,
         help='custom characters for falling leaves, e.g. "01" for matrix-style',
     )
     parser.add_argument(
@@ -192,14 +198,14 @@ def build_parser(defaults: Optional[Options] = None) -> argparse.ArgumentParser:
         "-V",
         "--volume",
         type=int,
-        default=defaults.volume,
+        default=defaults.audio.volume,
         help="volume level for radio [0-100]",
     )
     parser.add_argument(
         "-U",
         "--radio-url",
         type=str,
-        default=defaults.radio_url,
+        default=defaults.audio.radio_url,
         help="custom radio stream URL",
     )
     parser.add_argument(
@@ -207,127 +213,114 @@ def build_parser(defaults: Optional[Options] = None) -> argparse.ArgumentParser:
         "--wind",
         "--tilt",
         type=float,
-        default=defaults.wind,
+        default=defaults.animation.wind,
         help="wind force for falling leaves",
     )
     return parser
 
 
-def _raise_validation_errors(errors):
-    message = "\n".join(f"Error: {error}" for error in errors)
-    raise SystemExit(message)
+def _apply_bonsai_defaults(config: AppConfig):
+    config.tree.initial_len = 11
+    config.tree.leaf_len = 4
+    config.tree.num_layers = 6
+    config.tree.angle_degrees = 50
+    config.tree.type = TreeType.OFFSET_FIBONACCI
+    config.user_set_type = True
 
 
-def _apply_bonsai_defaults(options: Options):
-    options.initial_len = 11
-    options.leaf_len = 4
-    options.num_layers = 6
-    options.angle_mean = radians(50)
-
-
-def _apply_parsed_arguments(options: Options, args):
-    options.instant = args.instant
-    options.wait_time = args.wait
-    options.branch_chars = args.branch_chars
-    options.leaf_chars = args.leaf_chars
-    options.window_width = args.width
-    options.window_height = args.height
-    options.save_path = args.save
-    options.fixed_window = args.fixed_window
-    options.infinite = args.infinite or args.new
-    options.new = args.new
-    options.infinite_wait_time = args.wait_infinite
-    options.leaves_falling = args.leaves_falling
-    options.intensity = args.intensity
-    options.fall_speed = args.fall_speed
-    options.tumbling_speed = args.tumbling_speed
-    options.falling_chars = args.falling_chars
-    options.lofi = args.lofi
-    options.volume = args.volume
-    options.radio_url = args.radio_url
-    options.wind = args.wind
-
-    if args.bonsai:
-        _apply_bonsai_defaults(options)
-
-    if args.start_len is not None:
-        options.initial_len = args.start_len
-
-    if args.leaf_len is not None:
-        options.leaf_len = args.leaf_len
-
-    if args.layers is not None:
-        options.num_layers = args.layers
-
-    if args.angle is not None:
-        options.angle_mean = radians(args.angle)
-    elif not args.bonsai:
-        options.angle_mean = radians(DEFAULT_ANGLE_MEAN_DEGREES)
-
-    if options.leaves_falling:
-        options.infinite = False
-        options.new = False
-
-    if args.seed is not None:
-        options.set_seed(args.seed)
-
-    if args.type is not None:
-        options.type = args.type
-        options.user_set_type = True
-    elif args.bonsai:
-        options.type = int(TreeType.OFFSET_FIBONACCI)
-        options.user_set_type = True
-
-
-def _apply_colours(options: Options, args):
-    if args.preset and not colors.apply_preset(options, args.preset):
-        print(
-            f"Warning: Preset '{args.preset}' not found. Available: "
-            f"{', '.join(colors.PRESETS.keys())}"
-        )
-
-    try:
-        if args.branch_color:
-            options.branch_colour = colors.parse_color(args.branch_color)
-        if args.leaf_color:
-            options.leaf_colour = colors.parse_color(args.leaf_color)
-        if args.soil_color:
-            options.soil_colour = colors.parse_color(args.soil_color)
-    except ValueError as exc:
-        raise SystemExit(f"Error parsing colors: {exc}")
+def _resolve_mode(args) -> RunMode:
+    if args.new:
+        return RunMode.FOREST
+    if args.infinite:
+        return RunMode.INFINITE
+    if args.leaves_falling:
+        return RunMode.FALLING_LEAVES
+    return RunMode.SINGLE
 
 
 def _validate_args(args):
-    errors = []
-
     if args.instant and args.wait > 0:
-        errors.append("Conflicting flags: --instant and --wait cannot be used together.")
+        raise ConfigurationError(
+            "Conflicting flags: --instant and --wait cannot be used together."
+        )
 
     if (args.infinite or args.new) and args.leaves_falling:
-        errors.append(
+        raise ConfigurationError(
             "Conflicting flags: --infinite/--new and --leaves-falling are mutually exclusive."
         )
 
     if args.save and (args.infinite or args.new or args.leaves_falling or args.lofi):
-        errors.append(
+        raise ConfigurationError(
             "Conflicting flags: --save is not supported in animation modes "
             "(--infinite, --new, --leaves-falling, or --lofi)."
         )
 
-    if errors:
-        _raise_validation_errors(errors)
+
+def _apply_colours(config: AppConfig, args):
+    if args.preset and not colors.apply_preset(config.style.palette, args.preset):
+        raise ConfigurationError(
+            f"Preset '{args.preset}' not found. Available: {', '.join(colors.PRESETS.keys())}"
+        )
+
+    try:
+        if args.branch_color:
+            config.style.palette.branch_colour = colors.parse_color(args.branch_color)
+        if args.leaf_color:
+            config.style.palette.leaf_colour = colors.parse_color(args.leaf_color)
+        if args.soil_color:
+            config.style.palette.soil_colour = colors.parse_color(args.soil_color)
+    except ValueError as exc:
+        raise ConfigurationError(f"Error parsing colors: {exc}") from exc
 
 
-def parse_cli_args(argv: Optional[Sequence[str]] = None) -> Options:
-    options = Options()
-    parser = build_parser(options)
+def parse_cli_args(argv: Optional[Sequence[str]] = None) -> AppConfig:
+    config = AppConfig()
+    parser = build_parser(config)
     args = parser.parse_args(argv)
 
-    _apply_parsed_arguments(options, args)
-    _apply_colours(options, args)
     _validate_args(args)
 
-    if options.lofi and not (args.infinite or args.new or args.leaves_falling):
-        options.leaves_falling = True
+    config.render.instant = args.instant
+    config.render.wait_time = args.wait
+    config.style.branch_chars = args.branch_chars
+    config.style.leaf_chars = args.leaf_chars
+    config.render.width = args.width
+    config.render.height = args.height
+    config.render.fixed_window = args.fixed_window
+    config.output.save_path = args.save
+    config.animation.infinite_wait_time = args.wait_infinite
+    config.animation.intensity = args.intensity
+    config.animation.fall_speed = args.fall_speed
+    config.animation.tumbling_speed = args.tumbling_speed
+    config.animation.falling_chars = args.falling_chars
+    config.animation.wind = args.wind
+    config.audio.enabled = args.lofi
+    config.audio.volume = args.volume
+    config.audio.radio_url = args.radio_url
+    config.animation.mode = _resolve_mode(args)
 
-    return options
+    if args.bonsai:
+        _apply_bonsai_defaults(config)
+
+    if args.start_len is not None:
+        config.tree.initial_len = args.start_len
+    if args.leaf_len is not None:
+        config.tree.leaf_len = args.leaf_len
+    if args.layers is not None:
+        config.tree.num_layers = args.layers
+    if args.angle is not None:
+        config.tree.angle_degrees = args.angle
+
+    if args.type is not None:
+        config.tree.type = args.type
+        config.user_set_type = True
+
+    if args.seed is not None:
+        config.reseed(args.seed)
+
+    _apply_colours(config, args)
+
+    if config.audio.enabled and config.animation.mode == RunMode.SINGLE:
+        config.animation.mode = RunMode.FALLING_LEAVES
+
+    return config

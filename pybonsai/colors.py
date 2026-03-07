@@ -98,12 +98,12 @@ def get_preset(preset_name):
     return PRESETS.get(preset_name.strip().lower())
 
 
-def apply_preset(options, preset_name):
+def apply_preset(palette, preset_name):
     preset = get_preset(preset_name)
     if preset is None:
         return False
 
-    options.branch_colour = preset.get("branch_colour", options.branch_colour)
-    options.leaf_colour = preset.get("leaf_colour", options.leaf_colour)
-    options.soil_colour = preset.get("soil_colour", options.soil_colour)
+    palette.branch_colour = preset.get("branch_colour", palette.branch_colour)
+    palette.leaf_colour = preset.get("leaf_colour", palette.leaf_colour)
+    palette.soil_colour = preset.get("soil_colour", palette.soil_colour)
     return True

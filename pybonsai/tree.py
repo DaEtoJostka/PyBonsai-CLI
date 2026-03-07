@@ -1,7 +1,7 @@
 import math
-import random
 
 from .geometry import Vector
+from .options import RunMode
 
 
 class Tree:
@@ -22,10 +22,10 @@ class Tree:
 
     BRANCH_COLOUR = ((200, 255), (150, 255), (0, 0))  # range of rgb values
 
-    def __init__(self, window, root_pos, options):
+    def __init__(self, window, root_pos, config):
         self.window = window
         self.root_x, self.root_y = root_pos
-        self.options = options
+        self.config = config
 
         self.box_top_width = self.get_box_width()
 
@@ -58,17 +58,21 @@ class Tree:
                     colour = Tree.BOX_COLOUR
                 elif i == 0:
                     char = "_"
-                    colour = self.window.choose_colour(self.options.soil_colour)
+                    colour = self.window.choose_colour(
+                        self.config.style.palette.soil_colour
+                    )
                 elif i == Tree.BOX_HEIGHT - 1:
                     char = "_"
                     colour = Tree.BOX_COLOUR
                 else:
-                    if random.uniform(0, 1) < Tree.SOIL_CHAR_THRESHOLD:
-                        char = random.choice(Tree.SOIL_CHARS)
+                    if self.config.random.uniform(0, 1) < Tree.SOIL_CHAR_THRESHOLD:
+                        char = self.config.random.choice(Tree.SOIL_CHARS)
                     else:
                         char = " "
 
-                    colour = self.window.choose_colour(self.options.soil_colour)
+                    colour = self.window.choose_colour(
+                        self.config.style.palette.soil_colour
+                    )
 
                 self.window.set_char_instant(inx1, inx2, char, colour, True)
 
@@ -92,7 +96,7 @@ class Tree:
         for i in range(1, self.box_top_width):
             inx2 = root_inx2 - self.box_top_width // 2 + i
 
-            if random.uniform(0, 1) < Tree.MOUND_THRESHOLD / (num_drawn + 1):
+            if self.config.random.uniform(0, 1) < Tree.MOUND_THRESHOLD / (num_drawn + 1):
                 num_drawn += 1
                 max_width = self.box_top_width - i - 1
 
@@ -100,7 +104,9 @@ class Tree:
 
     def draw_mound(self, inx1, start_inx2, max_width):
         top_width = round(
-            random.normalvariate(Tree.MOUND_WIDTH_MEAN, Tree.MOUND_WIDTH_STD_DEV)
+            self.config.random.normalvariate(
+                Tree.MOUND_WIDTH_MEAN, Tree.MOUND_WIDTH_STD_DEV
+            )
         )
         top_width = min(top_width, max_width - 2)
 
@@ -115,7 +121,7 @@ class Tree:
             else:
                 char = "-"
 
-            colour = self.window.choose_colour(self.options.soil_colour)
+            colour = self.window.choose_colour(self.config.style.palette.soil_colour)
             self.window.set_char_instant(inx1, inx2, char, colour, True)
 
     def draw_tree_base(self, trunk_width):
@@ -130,7 +136,7 @@ class Tree:
         if trunk_width % 2 == 0:
             right_x -= 1
 
-        colour = self.window.choose_colour(self.options.branch_colour)
+        colour = self.window.choose_colour(self.config.style.palette.branch_colour)
         self.window.set_char_instant(inx1, left_x - 2, ".", colour, True)
         self.window.set_char_instant(inx1, left_x - 1, "/", colour, True)
         self.window.set_char_instant(inx1, right_x + 1, "\\", colour, True)
@@ -145,8 +151,8 @@ class RecursiveTree(Tree):
 
     MAX_INITIAL_WIDTH = 6
 
-    def __init__(self, window, root_pos, options):
-        super().__init__(window, root_pos, options)
+    def __init__(self, window, root_pos, config):
+        super().__init__(window, root_pos, config)
 
     def get_end_coords(self, start_x, start_y, length, theta):
         x = start_x + length * math.sin(theta)
@@ -155,8 +161,8 @@ class RecursiveTree(Tree):
         return x, y
 
     def get_initial_params(self):
-        initial_width = self.options.initial_len // 5
-        initial_angle = random.normalvariate(0, RecursiveTree.ANGLE_STD_DEV)
+        initial_width = self.config.tree.initial_len // 5
+        initial_angle = self.config.random.normalvariate(0, RecursiveTree.ANGLE_STD_DEV)
 
         # ensure the width is in a suitable range
         initial_width = max(0, initial_width)
@@ -170,12 +176,12 @@ class ClassicTree(RecursiveTree):
     MEAN_BRANCHES = 2
     BRANCHES_STD_DEV = 0.5
 
-    def __init__(self, window, root_pos, options):
-        super().__init__(window, root_pos, options)
+    def __init__(self, window, root_pos, config):
+        super().__init__(window, root_pos, config)
 
     def draw_branch(self, x, y, layer, length, width, theta):
-        if layer >= self.options.num_layers:
-            leaves = Leaves(self.window, (x, y), self.options)
+        if layer >= self.config.tree.num_layers:
+            leaves = Leaves(self.window, (x, y), self.config)
             leaves.draw()
 
             return
@@ -183,7 +189,7 @@ class ClassicTree(RecursiveTree):
         end_x, end_y = self.get_end_coords(x, y, length, theta)
 
         self.window.draw_line(
-            (x, y), (end_x, end_y), self.options.branch_colour, round(width)
+            (x, y), (end_x, end_y), self.config.style.palette.branch_colour, round(width)
         )
 
         self.draw_end_branches(x, y, layer, length, width, theta)
@@ -193,7 +199,7 @@ class ClassicTree(RecursiveTree):
         num_branches = max(
             0,
             round(
-                random.normalvariate(
+                self.config.random.normalvariate(
                     ClassicTree.MEAN_BRANCHES, ClassicTree.BRANCHES_STD_DEV
                 )
             ),
@@ -208,8 +214,8 @@ class ClassicTree(RecursiveTree):
             dist_up_branch = (
                 i + 1
             ) * step  # branches are linearly distributed along the parent
-            new_theta = theta + sign * random.normalvariate(
-                self.options.angle_mean, ClassicTree.ANGLE_STD_DEV
+            new_theta = theta + sign * self.config.random.normalvariate(
+                self.config.tree.angle_radians, ClassicTree.ANGLE_STD_DEV
             )
 
             x, y = self.get_end_coords(
@@ -230,7 +236,7 @@ class ClassicTree(RecursiveTree):
             self.root_x,
             self.root_y,
             1,
-            self.options.initial_len,
+            self.config.tree.initial_len,
             initial_width,
             initial_angle,
         )
@@ -238,8 +244,8 @@ class ClassicTree(RecursiveTree):
 
 class FibonacciTree(RecursiveTree):
     # trees with a fibonacci number of branches on each layer
-    def __init__(self, window, root_pos, options):
-        super().__init__(window, root_pos, options)
+    def __init__(self, window, root_pos, config):
+        super().__init__(window, root_pos, config)
 
         self.fib = self.fib_nums()
         self.branch_nums = self.generate_branch_nums()
@@ -247,7 +253,7 @@ class FibonacciTree(RecursiveTree):
     def fib_nums(self):
         fib = [1, 1]
 
-        for _ in range(self.options.num_layers):
+        for _ in range(self.config.tree.num_layers):
             fib.append(fib[-1] + fib[-2])
 
         return fib
@@ -257,7 +263,7 @@ class FibonacciTree(RecursiveTree):
         branch_nums = [
             [1]
         ]  # 1st index is the layer from the root, 2nd index is the position of the parent branch in its layer
-        for i in range(self.options.num_layers):
+        for i in range(self.config.tree.num_layers):
             num_branches = self.fib[i + 2]
             num_parents = sum(branch_nums[-1])
 
@@ -266,15 +272,15 @@ class FibonacciTree(RecursiveTree):
 
             current_nums = [base + 1 if x < diff else base for x in range(num_parents)]
 
-            random.shuffle(current_nums)
+            self.config.random.shuffle(current_nums)
 
             branch_nums.append(current_nums)
 
         return branch_nums
 
     def draw_branch(self, x, y, layer_inx, branch_inx, length, width, theta):
-        if layer_inx > self.options.num_layers:
-            leaf = Leaves(self.window, (x, y), self.options)
+        if layer_inx > self.config.tree.num_layers:
+            leaf = Leaves(self.window, (x, y), self.config)
             leaf.draw()
 
             return
@@ -282,7 +288,7 @@ class FibonacciTree(RecursiveTree):
         end_x, end_y = self.get_end_coords(x, y, length, theta)
 
         self.window.draw_line(
-            (x, y), (end_x, end_y), self.options.branch_colour, round(width)
+            (x, y), (end_x, end_y), self.config.style.palette.branch_colour, round(width)
         )
 
         self.draw_end_branches(x, y, layer_inx, branch_inx, length, width, theta)
@@ -298,8 +304,8 @@ class FibonacciTree(RecursiveTree):
         x, y = self.get_end_coords(start_x, start_y, length, theta)
 
         for i in range(num_branches):
-            angle = random.normalvariate(
-                self.options.angle_mean, FibonacciTree.ANGLE_STD_DEV
+            angle = self.config.random.normalvariate(
+                self.config.tree.angle_radians, FibonacciTree.ANGLE_STD_DEV
             )
             new_theta = theta + sign * angle
 
@@ -322,7 +328,7 @@ class FibonacciTree(RecursiveTree):
             self.root_y,
             1,
             0,
-            self.options.initial_len,
+            self.config.tree.initial_len,
             initial_width,
             initial_angle,
         )
@@ -330,8 +336,8 @@ class FibonacciTree(RecursiveTree):
 
 class OffsetFibTree(FibonacciTree):
     # similar to fibonacci tree, but branches grow from the middle of the parent branch
-    def __init__(self, window, root_pos, options):
-        super().__init__(window, root_pos, options)
+    def __init__(self, window, root_pos, config):
+        super().__init__(window, root_pos, config)
 
     def draw_end_branches(
         self, start_x, start_y, layer_inx, branch_inx, length, width, theta
@@ -348,8 +354,8 @@ class OffsetFibTree(FibonacciTree):
             dist_up_branch = (
                 i + 1
             ) * step  # branches are now linearly distributed along the parent branch
-            new_theta = theta + sign * random.normalvariate(
-                self.options.angle_mean, OffsetFibTree.ANGLE_STD_DEV
+            new_theta = theta + sign * self.config.random.normalvariate(
+                self.config.tree.angle_radians, OffsetFibTree.ANGLE_STD_DEV
             )
 
             x, y = self.get_end_coords(start_x, start_y, dist_up_branch, theta)
@@ -368,8 +374,8 @@ class RandomOffsetFibTree(FibonacciTree):
     NON_END_MIN = 0.3
     NON_END_MAX = 0.9
 
-    def __init__(self, window, root_pos, options):
-        super().__init__(window, root_pos, options)
+    def __init__(self, window, root_pos, config):
+        super().__init__(window, root_pos, config)
 
     def draw_end_branches(
         self, start_x, start_y, layer_inx, branch_inx, length, width, theta
@@ -382,7 +388,10 @@ class RandomOffsetFibTree(FibonacciTree):
 
         need_leaves = True
         for i in range(num_branches):
-            grow_at_end = random.uniform(0, 1) < RandomOffsetFibTree.GROW_END_THRESHOLD
+            grow_at_end = (
+                self.config.random.uniform(0, 1)
+                < RandomOffsetFibTree.GROW_END_THRESHOLD
+            )
 
             if grow_at_end:
                 # this branch will grow at the end of the parent, so do not draw leaves at the end of the parent
@@ -390,13 +399,13 @@ class RandomOffsetFibTree(FibonacciTree):
                 dist_up_branch = length
             else:
                 # this branch will grow at a random distance along the parent (not the end), so we may need leaves at the end of the parent
-                dist_up_branch = random.uniform(
+                dist_up_branch = self.config.random.uniform(
                     length * RandomOffsetFibTree.NON_END_MIN,
                     length * RandomOffsetFibTree.NON_END_MAX,
                 )
 
-            new_theta = theta + sign * random.normalvariate(
-                self.options.angle_mean, OffsetFibTree.ANGLE_STD_DEV
+            new_theta = theta + sign * self.config.random.normalvariate(
+                self.config.tree.angle_radians, OffsetFibTree.ANGLE_STD_DEV
             )
 
             x, y = self.get_end_coords(start_x, start_y, dist_up_branch, theta)
@@ -411,44 +420,48 @@ class RandomOffsetFibTree(FibonacciTree):
             # no branches have grown at the end of the parent, so we can grow leaves
             end_pos = self.get_end_coords(start_x, start_y, length, theta)
 
-            leaves = Leaves(self.window, end_pos, self.options)
+            leaves = Leaves(self.window, end_pos, self.config)
             leaves.draw()
 
 
 class Leaves:
     NUM_LEAVES = 4
 
-    def __init__(self, window, branch_end, options):
+    def __init__(self, window, branch_end, config):
         self.window = window
         self.branch_x, self.branch_y = branch_end
-        self.options = options
+        self.config = config
 
     def draw(self):
         g = Vector(0, -1)
 
         for _ in range(Leaves.NUM_LEAVES):
             vel = Vector(
-                random.uniform(-1, 1), random.uniform(-1, 1)
+                self.config.random.uniform(-1, 1), self.config.random.uniform(-1, 1)
             )  # random starting velocity for the leaves to step along
             vel.normalise()
             pos = Vector(self.branch_x, self.branch_y)
 
-            for i in range(self.options.leaf_len):
+            for i in range(self.config.tree.leaf_len):
                 pos += vel
 
-                colour = self.window.choose_colour(self.options.leaf_colour)
-                char = random.choice(self.options.leaf_chars)
+                colour = self.window.choose_colour(self.config.style.palette.leaf_colour)
+                char = self.config.random.choice(self.config.style.leaf_chars)
 
-                if self.options.instant:
+                if self.config.render.instant:
                     self.window.set_char_instant(pos.x, pos.y, char, colour, False)
                 else:
                     self.window.set_char_wait(
-                        pos.x, pos.y, char, colour, False, self.options.wait_time
+                        pos.x,
+                        pos.y,
+                        char,
+                        colour,
+                        False,
+                        self.config.render.wait_time,
                     )
 
-                if self.options.leaves_falling:
+                if self.config.animation.mode == RunMode.FALLING_LEAVES:
                     self.window.register_leaf_point(pos.x, pos.y, char, colour)
 
-                # make the leaves droop downwards by adding some gravity force
-                weight = i / self.options.leaf_len
+                weight = i / self.config.tree.leaf_len
                 vel += g * weight

@@ -1,20 +1,22 @@
 import subprocess
 import shutil
 
+from .errors import RadioError
+
 DEFAULT_LOFI_URL = "https://listen.reyfm.de/lofi_320kbps.mp3"
 
 _radio_process = None
 
 
 def start_radio(url=None, volume=50):
-    """Starts the Lo-Fi radio stream using ffplay in the background."""
+    """Start the Lo-Fi stream and return a warning message when unavailable."""
     global _radio_process
 
     if _radio_process is not None:
-        return  # Already running
+        return None
 
     if not shutil.which("ffplay"):
-        print(
+        return (
             "Warning: 'ffplay' not found. Cannot play radio. Install FFmpeg to enable this feature."
         )
         return
@@ -37,8 +39,10 @@ def start_radio(url=None, volume=50):
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
         )
-    except Exception as e:
-        print(f"Warning: Could not start radio: {e}")
+    except OSError as exc:
+        raise RadioError(f"Could not start radio: {exc}") from exc
+
+    return None
 
 
 def stop_radio():
