@@ -10,10 +10,10 @@ This is a fork of [PyBonsai](https://github.com/Ben-Edwards44/PyBonsai) with som
 - Better CLI experience 💻
 - Infinite mode 🔄
 - Save to text files 📄
-- [NEW] ✨ True bonsai 🌳
-- [NEW] ✨ Preset change 🎨
-- [NEW] ✨ Falling leaves animation 🍃
-- [NEW] ✨ Lofi radio 📻
+-  True bonsai 🌳
+-  Preset change 🎨
+-  Falling leaves animation 🍃
+-  Lofi radio 📻
 
 About other features read more on [examples.md](https://github.com/DaEtoJostka/PyBonsai-CLI/blob/main/examples.md).
 
@@ -95,20 +95,20 @@ OPTIONS:
     -n, --new             run in infinite mode, automatically growing new trees
     -W, --wait-infinite   time delay between drawing in infinite mode [default {Options.INFINITE_WAIT_TIME}]
 
-    -p, --preset          [NEW] ✨ apply a color preset: {", ".join(colors.PRESETS.keys())}
-    -B, --branch-color    [NEW] ✨ custom color for branches (e.g. "red", "#553311", "100,60,30")
-    -e, --leaf-color      [NEW] ✨ custom color for leaves
-    -g, --soil-color      [NEW] ✨ custom color for soil
+    -p, --preset           apply a color preset: {", ".join(colors.PRESETS.keys())}
+    -B, --branch-color     custom color for branches (e.g. "red", "#553311", "100,60,30")
+    -e, --leaf-color       custom color for leaves
+    -g, --soil-color       custom color for soil
 
-    -F, --leaves-falling  [NEW] ✨ animate leaves falling from the tree continuously
-    -N, --intensity       [NEW] ✨ intensity of falling leaves [1-10, default {Options.INTENSITY}]
-    -d, --fall-speed      [NEW] ✨ speed of falling animation [default {Options.FALL_SPEED}]
-    -T, --tumbling-speed  [NEW] ✨ speed of leaf character change [default {Options.TUMBLING_SPEED}]
-    -K, --falling-chars   [NEW] ✨ custom characters for falling leaves (e.g. "01" for matrix-style)
+    -F, --leaves-falling   animate leaves falling from the tree continuously
+    -N, --intensity        intensity of falling leaves [1-10, default {Options.INTENSITY}]
+    -d, --fall-speed       speed of falling animation [default {Options.FALL_SPEED}]
+    -T, --tumbling-speed   speed of leaf character change [default {Options.TUMBLING_SPEED}]
+    -K, --falling-chars    custom characters for falling leaves (e.g. "01" for matrix-style)
 
-    -R, --lofi            [NEW] ✨ play Lo-Fi radio stream in the terminal (requires ffplay)
-    -V, --volume          [NEW] ✨ volume level for radio [0-100, default {Options.VOLUME}]
-    -U, --radio-url       [NEW] ✨ custom radio stream URL
+    -R, --lofi             play Lo-Fi radio stream in the terminal (requires ffplay)
+    -V, --volume           volume level for radio [0-100, default {Options.VOLUME}]
+    -U, --radio-url        custom radio stream URL
 ```
 
 Other options usage examples see [examples.md](https://github.com/DaEtoJostka/PyBonsai-CLI/blob/main/examples.md)
