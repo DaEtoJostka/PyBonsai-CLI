@@ -1,4 +1,4 @@
-# PyBonsai-CLI 🪴
+# PyBonsai-CLI
 
 PyBonsai is a Python script that generates procedural ASCII art trees in the comfort of your terminal.
 
