@@ -23,6 +23,10 @@ def run(config: AppConfig, stdout=None, stderr=None):
         except RadioError as exc:
             warning = f"Warning: {exc}"
 
+    if warning:
+        stderr_output.write_line(warning)
+        stderr_output.flush()
+
     window = create_window(runtime, stdout_output)
     result = None
 
@@ -38,7 +42,7 @@ def run(config: AppConfig, stdout=None, stderr=None):
         window.reset_cursor()
         stdout_output.write_line("Stopped by user")
     finally:
-        radio.stop_radio()
+        warning = radio.stop_radio()
         stdout_output.show_cursor()
 
     if warning:

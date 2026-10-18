@@ -132,6 +132,29 @@ class RadioHelperTests(unittest.TestCase):
 
 
 class MainSmokeTests(unittest.TestCase):
+    def test_radio_failure_is_reported_after_animation_stops(self):
+        stdout = io.StringIO()
+        stderr = io.StringIO()
+        with patch("pybonsai.app.radio.start_radio", return_value=None), patch(
+            "pybonsai.app.radio.stop_radio", return_value="Warning: Station unavailable"
+        ), patch("pybonsai.app.run_leaves_falling", side_effect=KeyboardInterrupt):
+            self.assertEqual(main(["-R", "2"], stdout=stdout, stderr=stderr), 0)
+        self.assertIn("Station unavailable", stderr.getvalue())
+
+    def test_missing_radio_dependency_warning_is_shown_before_animation(self):
+        stdout = io.StringIO()
+        stderr = io.StringIO()
+
+        def animate(*args):
+            self.assertIn("ffplay", stderr.getvalue())
+            raise KeyboardInterrupt
+
+        with patch("pybonsai.app.radio.start_radio", return_value="Warning: ffplay missing"), patch(
+            "pybonsai.app.radio.stop_radio", return_value=None
+        ), patch("pybonsai.app.run_leaves_falling", side_effect=animate):
+            self.assertEqual(main(["-R"], stdout=stdout, stderr=stderr), 0)
+        self.assertEqual(stderr.getvalue().count("Warning:"), 1)
+
     def test_main_renders_and_saves_tree(self):
         with tempfile.TemporaryDirectory() as temp_dir:
             save_path = os.path.join(temp_dir, "tree.txt")
