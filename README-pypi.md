@@ -115,52 +115,16 @@ Other options usage examples see [examples.md](https://github.com/DaEtoJostka/Py
 
 ### Radio
 
-Radio needs FFmpeg's `ffplay` on your PATH. YouTube presets also need Python 3.10+
-and Deno 2.3+ or Node.js 22+ on PATH. Both runtimes are detected automatically.
-The Python dependencies include current `yt-dlp` and its JavaScript components
-(`yt-dlp[default]`), plus Streamlink for other supported sites. Direct audio URLs
-do not require a JavaScript runtime.
-
-From a source checkout, update the environment before testing:
-
-```sh
-uv sync
-uv run python -m pybonsai -R 2
-```
-
-On macOS, missing system dependencies can be installed with `brew install ffmpeg deno`.
-If a supported Node.js is already installed, you only need FFmpeg.
+Requires FFmpeg (`ffplay`). YouTube stations also need Python 3.10+ and
+Deno 2.3+ or Node.js 22+ on your PATH.
 
 ```sh
 pybonsai -R       # lo-fi
 pybonsai -R 2     # synthwave
-pybonsai -R 3     # sad lo-fi
-pybonsai -U 'https://example.com/live.mp3'  # your own stream
+pybonsai -U 'https://example.com/live.mp3'  # custom stream
 ```
 
-Playback reconnects automatically after a stream ends or a network request fails.
-Decoded audio frames are monitored as well: if no frames arrive for 15 seconds,
-the player is restarted even when its process and network connection are still
-running. Initial audio startup is limited to 45 seconds. The monitor tracks frames,
-so quiet music or silence within a working broadcast does not trigger a restart.
-YouTube's temporary media URL is resolved again on each restart. Repeated failures
-use increasing delays, up to 30 seconds. Press Ctrl+C to stop both the animation
-and radio, including pending retries. If playback could not recover, the last
-error is printed when the animation stops.
-
-YouTube broadcasts can move to new video URLs. If a station stays unavailable,
-check its broadcast page and use `--radio-url` with its current URL. Keep `yt-dlp`
-updated in the same environment as PyBonsai; for a source checkout using uv, run
-`uv sync --upgrade-package yt-dlp`. Old YouTube clients can return a playable URL
-whose segments start failing with HTTP 403 shortly afterwards, so a successful
-startup alone is not enough to validate an old `yt-dlp` version. See the
-[yt-dlp JavaScript setup guide](https://github.com/yt-dlp/yt-dlp/wiki/EJS) for runtime
-and component requirements.
-
-To build a wheel, run `uv build --wheel`; the package is written to `dist/`.
-Run the tests with `uv run python -m unittest discover -s tests -v`. The local
-playback recovery test requires both `ffmpeg` and `ffplay` and uses a dummy audio
-device, without internet access or speaker output.
+See `--help` for all stations. Playback reconnects automatically; press Ctrl+C to stop.
 
 ## Like it?
 
