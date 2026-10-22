@@ -1,6 +1,7 @@
 """CLI parsing and mapping into structured config objects."""
 
 import argparse
+import math
 import shutil
 from typing import Optional, Sequence
 
@@ -15,6 +16,11 @@ from .options import (
     TreeType,
     normalise_tree_type,
 )
+
+
+# Branch count grows exponentially with depth: a classic tree takes ~20 s to
+# generate at 20 layers and never finishes at 40.
+MAX_LAYERS = 20
 
 
 class HelpFormatter(
@@ -70,6 +76,17 @@ def _parse_radio_preset(value):
         return radio.normalise_station_name(value)
     except radio.RadioError as exc:
         raise argparse.ArgumentTypeError(str(exc)) from exc
+
+
+def _parse_finite_float(value):
+    # float() accepts "nan" and "inf", which crash the drawing and sleep calls.
+    try:
+        number = float(value)
+    except ValueError:
+        number = math.nan
+    if not math.isfinite(number):
+        raise argparse.ArgumentTypeError(f"expected a finite number, got {value!r}")
+    return number
 
 
 def build_parser(defaults: Optional[AppConfig] = None) -> argparse.ArgumentParser:
@@ -179,7 +196,7 @@ def build_parser(defaults: Optional[AppConfig] = None) -> argparse.ArgumentParse
     render_group.add_argument(
         "-w",
         "--wait",
-        type=float,
+        type=_parse_finite_float,
         default=defaults.render.wait_time,
         metavar="SECONDS",
         help="time delay between drawing characters when not in instant mode",
@@ -247,7 +264,7 @@ def build_parser(defaults: Optional[AppConfig] = None) -> argparse.ArgumentParse
     animation_group.add_argument(
         "-W",
         "--wait-infinite",
-        type=float,
+        type=_parse_finite_float,
         default=defaults.animation.infinite_wait_time,
         metavar="SECONDS",
         help="time delay between drawing in infinite mode",
@@ -269,7 +286,7 @@ def build_parser(defaults: Optional[AppConfig] = None) -> argparse.ArgumentParse
     animation_group.add_argument(
         "-d",
         "--fall-speed",
-        type=float,
+        type=_parse_finite_float,
         default=defaults.animation.fall_speed,
         metavar="SPEED",
         help="speed of the falling animation",
@@ -277,7 +294,7 @@ def build_parser(defaults: Optional[AppConfig] = None) -> argparse.ArgumentParse
     animation_group.add_argument(
         "-T",
         "--tumbling-speed",
-        type=float,
+        type=_parse_finite_float,
         default=defaults.animation.tumbling_speed,
         metavar="SPEED",
         help="speed of leaf character changes while falling",
@@ -294,7 +311,7 @@ def build_parser(defaults: Optional[AppConfig] = None) -> argparse.ArgumentParse
         "-M",
         "--wind",
         "--tilt",
-        type=float,
+        type=_parse_finite_float,
         default=defaults.animation.wind,
         metavar="FORCE",
         help="wind force for falling leaves",
@@ -368,6 +385,25 @@ def _validate_args(args):
             "Conflicting flags: --save is not supported in animation modes "
             "(--infinite, --new, --leaves-falling, or radio playback)."
         )
+
+    # Reject out-of-range values: some crash, hang, or make falling leaves pile up forever.
+    value_checks = (
+        (args.wait >= 0, "--wait must not be negative."),
+        (args.wait_infinite >= 0, "--wait-infinite must not be negative."),
+        (args.fall_speed > 0, "--fall-speed must be greater than 0."),
+        (1 <= args.intensity <= 10, "--intensity must be between 1 and 10."),
+        (0 <= args.volume <= 100, "--volume must be between 0 and 100."),
+        (args.width > 0 and args.height > 0, "--width and --height must be greater than 0."),
+        (
+            args.layers is None or 0 <= args.layers <= MAX_LAYERS,
+            f"--layers must be between 0 and {MAX_LAYERS}.",
+        ),
+        (args.branch_chars != "", "--branch-chars must not be empty."),
+        (args.leaf_chars != "", "--leaf-chars must not be empty."),
+    )
+    for valid, message in value_checks:
+        if not valid:
+            raise ConfigurationError(message)
 
 
 def _apply_colours(config: AppConfig, args):

@@ -2,13 +2,14 @@ import io
 import os
 import tempfile
 import unittest
+from contextlib import redirect_stderr
 from unittest.mock import patch
 
-from pybonsai.app import main
-from pybonsai.cli import build_parser, parse_cli_args
+from pybonsai.app import _leave_room_for_status, main
+from pybonsai.cli import MAX_LAYERS, build_parser, parse_cli_args
 from pybonsai import radio
 from pybonsai.errors import ConfigurationError
-from pybonsai.options import RunMode, TreeType, get_default_window_size
+from pybonsai.options import AppConfig, RunMode, TreeType, get_default_window_size
 
 
 class DefaultWindowTests(unittest.TestCase):
@@ -110,6 +111,43 @@ class CliParsingTests(unittest.TestCase):
 
         self.assertIn("Error parsing colors", str(context.exception))
 
+    def test_values_that_crash_or_hang_raise_configuration_error(self):
+        cases = {
+            ("-d", "0"): "--fall-speed",
+            ("-R", "-d", "0"): "--fall-speed",
+            ("-w", "-1"): "--wait",
+            ("-W", "-1"): "--wait-infinite",
+            ("-N", "11"): "--intensity",
+            ("-V", "101"): "--volume",
+            ("-x", "0"): "--width",
+            ("-y", "-3"): "--height",
+            ("-l", str(MAX_LAYERS + 1)): "--layers",
+            ("-c", ""): "--branch-chars",
+            ("-C", ""): "--leaf-chars",
+        }
+        for argv, flag in cases.items():
+            with self.subTest(argv=argv):
+                with self.assertRaises(ConfigurationError) as context:
+                    parse_cli_args(list(argv))
+                self.assertIn(flag, str(context.exception))
+
+    def test_non_finite_numbers_are_rejected(self):
+        for argv in (["-M", "nan"], ["-W", "inf"], ["-d", "fast"]):
+            with self.subTest(argv=argv), redirect_stderr(io.StringIO()) as stderr:
+                with self.assertRaises(SystemExit):
+                    parse_cli_args(argv)
+                self.assertIn("expected a finite number", stderr.getvalue())
+
+    def test_boundary_values_are_accepted(self):
+        config = parse_cli_args(
+            ["-N", "1", "-V", "100", "-l", str(MAX_LAYERS), "-w", "0", "-M", "-0.3"]
+        )
+
+        self.assertEqual(config.animation.intensity, 1)
+        self.assertEqual(config.audio.volume, 100)
+        self.assertEqual(config.tree.num_layers, MAX_LAYERS)
+        self.assertEqual(config.animation.wind, -0.3)
+
 
 class RadioHelperTests(unittest.TestCase):
     def test_stream_to_url_prefers_manifest_url(self):
@@ -141,19 +179,48 @@ class MainSmokeTests(unittest.TestCase):
             self.assertEqual(main(["-R", "2"], stdout=stdout, stderr=stderr), 0)
         self.assertIn("Station unavailable", stderr.getvalue())
 
-    def test_missing_radio_dependency_warning_is_shown_before_animation(self):
+    def test_missing_radio_dependency_stays_visible_during_animation(self):
         stdout = io.StringIO()
         stderr = io.StringIO()
 
-        def animate(*args):
-            self.assertIn("ffplay", stderr.getvalue())
+        def animate(window, config):
+            # The animation clears the screen, so the warning must be redrawn with the tree.
+            window.clear_screen()
+            window.draw()
+            self.assertIn("Warning: ffplay missing", stdout.getvalue().split("\033[2J")[-1])
             raise KeyboardInterrupt
 
         with patch("pybonsai.app.radio.start_radio", return_value="Warning: ffplay missing"), patch(
             "pybonsai.app.radio.stop_radio", return_value=None
         ), patch("pybonsai.app.run_leaves_falling", side_effect=animate):
-            self.assertEqual(main(["-R"], stdout=stdout, stderr=stderr), 0)
-        self.assertEqual(stderr.getvalue().count("Warning:"), 1)
+            self.assertEqual(main(["-R", "-x", "60", "-y", "20"], stdout=stdout, stderr=stderr), 0)
+        self.assertEqual(stderr.getvalue().count("Warning: ffplay missing"), 1)
+
+    def test_running_radio_status_is_drawn_below_the_tree(self):
+        stdout = io.StringIO()
+
+        def animate(window, config):
+            window.draw()
+            raise KeyboardInterrupt
+
+        with patch("pybonsai.app.radio.start_radio", return_value=None), patch(
+            "pybonsai.app.radio.radio_status", return_value="Radio: playing"
+        ), patch("pybonsai.app.radio.stop_radio", return_value=None), patch(
+            "pybonsai.app.run_leaves_falling", side_effect=animate
+        ):
+            main(["-R", "-x", "60", "-y", "20"], stdout=stdout, stderr=io.StringIO())
+        self.assertIn("Radio: playing\033[K", stdout.getvalue())
+
+    def test_radio_status_gets_its_own_terminal_row(self):
+        config = AppConfig()
+        config.render.height = 25
+        with patch("pybonsai.app.os.get_terminal_size", return_value=os.terminal_size((80, 24))):
+            _leave_room_for_status(config)
+        self.assertEqual(config.render.height, 23)
+
+        with patch("pybonsai.app.os.get_terminal_size", side_effect=OSError):
+            _leave_room_for_status(config)
+        self.assertEqual(config.render.height, 23)
 
     def test_main_renders_and_saves_tree(self):
         with tempfile.TemporaryDirectory() as temp_dir:

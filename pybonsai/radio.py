@@ -1,3 +1,4 @@
+import importlib.util
 import logging
 import os
 import re
@@ -8,7 +9,6 @@ import sys
 import threading
 import time
 from dataclasses import dataclass
-from pathlib import Path
 from typing import Dict, Optional, Tuple
 from urllib.parse import urlparse
 
@@ -207,6 +207,12 @@ def stop_radio():
     return session.warning
 
 
+def radio_status():
+    """Describe the running session in one line, or return None."""
+    session = _radio_session
+    return None if session is None else session.status()
+
+
 def _resolve_stream(stream_url):
     _configure_streamlink_logging()
     session = streamlink.Streamlink()
@@ -292,6 +298,10 @@ class _AudioMonitor:
             with self.lock:
                 self.last_error = _error_detail(line)
 
+    def has_audio(self):
+        with self.lock:
+            return self.last_frame_at is not None
+
     def check(self, now):
         with self.lock:
             first, last, detail = self.first_frame_at, self.last_frame_at, self.last_error
@@ -319,10 +329,18 @@ class _RadioSession:
         self.yt_dlp_command = yt_dlp_command
         self.stop_event = threading.Event()
         self.warning = None
+        self.playing = False
         self.retry_delay = RETRY_DELAY
         self.thread = threading.Thread(
             target=self._run, daemon=True, name="pybonsai-radio"
         )
+
+    def status(self):
+        if self.playing:
+            return "Radio: playing"
+        if self.warning:
+            return f"Radio: reconnecting... {self.warning}"
+        return "Radio: connecting..."
 
     def _run(self):
         while not self.stop_event.is_set():
@@ -393,10 +411,13 @@ class _RadioSession:
                 now = time.monotonic()
                 if stream_fd is not None and now - last_data[0] >= RESOLVE_TIMEOUT:
                     raise RadioError("Radio stream stopped sending audio.")
-                if monitor.check(now):
+                stable = monitor.check(now)
+                self.playing = monitor.has_audio()
+                if stable:
                     self.warning = None
                     self.retry_delay = RETRY_DELAY
         finally:
+            self.playing = False
             pipe_stop.set()
             _terminate_process(player)
             if monitor is not None:
@@ -420,7 +441,7 @@ class _RadioSession:
 def _resolve_ytdlp_url(yt_dlp_command, stream_url, stop_event):
     """Resolve a media URL without piping a long-running downloader into ffplay."""
     command = [
-        yt_dlp_command,
+        *yt_dlp_command,
         "--ignore-config",
         "--no-playlist",
         "--no-colors",
@@ -569,17 +590,13 @@ def _requires_ytdlp(stream_url: str) -> bool:
 
 
 def _resolve_ytdlp_command():
-    python_executable = Path(sys.executable)
-    local_candidates = (
-        python_executable.with_name("yt-dlp"),
-        python_executable.with_name("yt_dlp"),
-    )
+    # Prefer the yt-dlp installed next to PyBonsai. pipx keeps its console
+    # script off PATH, and on Windows that script is an .exe.
+    if sys.executable and importlib.util.find_spec("yt_dlp") is not None:
+        return [sys.executable, "-m", "yt_dlp"]
 
-    for candidate in local_candidates:
-        if candidate.exists():
-            return str(candidate)
-
-    return shutil.which("yt-dlp")
+    executable = shutil.which("yt-dlp")
+    return [executable] if executable else None
 
 
 def _ytdlp_js_runtime_args():

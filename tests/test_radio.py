@@ -23,7 +23,7 @@ class RadioRecoveryTests(unittest.TestCase):
             return None
 
         second_player.poll.side_effect = playing
-        session = radio._RadioSession(radio.DEFAULT_SYNTHWAVE_URL, 37, "yt-dlp")
+        session = radio._RadioSession(radio.DEFAULT_SYNTHWAVE_URL, 37, ["yt-dlp"])
         session.retry_delay = 0.01
         with patch.object(radio, "RADIO_POLL_INTERVAL", 0.01), patch.object(
             radio, "_resolve_ytdlp_url",
@@ -81,7 +81,7 @@ class RadioRecoveryTests(unittest.TestCase):
         self.assertIsNone(radio._radio_session)
 
     def test_stop_during_resolution_never_starts_player(self):
-        session = radio._RadioSession(radio.DEFAULT_SYNTHWAVE_URL, 50, "yt-dlp")
+        session = radio._RadioSession(radio.DEFAULT_SYNTHWAVE_URL, 50, ["yt-dlp"])
 
         def resolve(*args):
             session.stop_event.set()
@@ -119,6 +119,43 @@ class RadioRecoveryTests(unittest.TestCase):
             session._play_once()
         self.assertIsNone(session.warning)
         self.assertEqual(session.retry_delay, radio.RETRY_DELAY)
+
+    def test_status_reports_connecting_playing_and_reconnecting(self):
+        session = radio._RadioSession("https://example.com/radio", 50)
+        self.assertEqual(session.status(), "Radio: connecting...")
+        session.warning = "Warning: HTTP 403"
+        self.assertEqual(session.status(), "Radio: reconnecting... Warning: HTTP 403")
+        session.playing = True
+        self.assertEqual(session.status(), "Radio: playing")
+
+    def test_playing_status_follows_decoded_audio(self):
+        session = radio._RadioSession("https://example.com/radio", 50)
+        statuses = []
+
+        def wait(timeout):
+            statuses.append(session.status())
+            return len(statuses) > 1
+
+        session.stop_event = Mock()
+        session.stop_event.is_set.return_value = False
+        session.stop_event.wait.side_effect = wait
+        player = Mock(stdin=None, stderr=io.BytesIO())
+        player.poll.return_value = None
+        with patch.object(radio, "streamlink", None), patch.object(
+            radio._AudioMonitor, "has_audio", return_value=True
+        ), patch.object(radio.subprocess, "Popen", return_value=player), patch.object(
+            radio, "_terminate_process"
+        ):
+            session._play_once()
+        self.assertEqual(statuses, ["Radio: connecting...", "Radio: playing"])
+        self.assertFalse(session.playing)
+
+    def test_radio_status_describes_the_current_session(self):
+        self.assertIsNone(radio.radio_status())
+        session = Mock()
+        session.status.return_value = "Radio: playing"
+        radio._radio_session = session
+        self.assertEqual(radio.radio_status(), "Radio: playing")
 
     def test_living_player_without_audio_does_not_clear_error(self):
         session = radio._RadioSession("https://example.com/radio", 50)
@@ -220,7 +257,7 @@ class RadioResolverTests(unittest.TestCase):
             radio, "_terminate_process"
         ) as terminate:
             with self.assertRaisesRegex(RadioError, "live stream is unavailable"):
-                radio._resolve_ytdlp_url("yt-dlp", radio.DEFAULT_LOFI_URL, threading.Event())
+                radio._resolve_ytdlp_url(["yt-dlp"], radio.DEFAULT_LOFI_URL, threading.Event())
         terminate.assert_called_once_with(process, process_group=True)
         self.assertTrue(process.stdout.closed)
         self.assertTrue(process.stderr.closed)
@@ -230,9 +267,12 @@ class RadioResolverTests(unittest.TestCase):
         with patch.object(radio.subprocess, "Popen", return_value=process) as popen, patch.object(
             radio, "_terminate_process"
         ):
-            url = radio._resolve_ytdlp_url("yt-dlp", radio.DEFAULT_LOFI_URL, threading.Event())
+            url = radio._resolve_ytdlp_url(
+                ["python", "-m", "yt_dlp"], radio.DEFAULT_LOFI_URL, threading.Event()
+            )
         self.assertEqual(url, "https://example.com/audio.m3u8")
         command = popen.call_args.args[0]
+        self.assertEqual(command[:4], ["python", "-m", "yt_dlp", "--ignore-config"])
         self.assertIn("--get-url", command)
         self.assertIn("--ignore-config", command)
         self.assertIn("--no-playlist", command)
@@ -249,7 +289,7 @@ class RadioResolverTests(unittest.TestCase):
             radio, "_terminate_process"
         ):
             with self.assertRaisesRegex(RadioError, r"yt-dlp\[default\]"):
-                radio._resolve_ytdlp_url("yt-dlp", radio.DEFAULT_LOFI_URL, threading.Event())
+                radio._resolve_ytdlp_url(["yt-dlp"], radio.DEFAULT_LOFI_URL, threading.Event())
 
     def test_old_external_ytdlp_gets_an_upgrade_message(self):
         process = self.make_process(
@@ -259,7 +299,7 @@ class RadioResolverTests(unittest.TestCase):
             radio, "_terminate_process"
         ):
             with self.assertRaisesRegex(RadioError, "yt-dlp is too old"):
-                radio._resolve_ytdlp_url("yt-dlp", radio.DEFAULT_LOFI_URL, threading.Event())
+                radio._resolve_ytdlp_url(["yt-dlp"], radio.DEFAULT_LOFI_URL, threading.Event())
 
     def test_hung_resolver_is_terminated_after_deadline(self):
         process = self.make_process()
@@ -268,7 +308,7 @@ class RadioResolverTests(unittest.TestCase):
             radio.time, "monotonic", side_effect=[0, radio.RESOLVE_TIMEOUT + 1]
         ), patch.object(radio, "_terminate_process") as terminate:
             with self.assertRaisesRegex(RadioError, "Timed out"):
-                radio._resolve_ytdlp_url("yt-dlp", radio.DEFAULT_LOFI_URL, threading.Event())
+                radio._resolve_ytdlp_url(["yt-dlp"], radio.DEFAULT_LOFI_URL, threading.Event())
         terminate.assert_called_once_with(process, process_group=True)
 
     def test_cancel_hung_resolver_is_prompt_and_reaps_process(self):
@@ -283,7 +323,7 @@ class RadioResolverTests(unittest.TestCase):
         with patch.object(radio.subprocess, "Popen", return_value=process), patch.object(
             radio, "_terminate_process"
         ) as terminate:
-            self.assertIsNone(radio._resolve_ytdlp_url("yt-dlp", radio.DEFAULT_LOFI_URL, stop_event))
+            self.assertIsNone(radio._resolve_ytdlp_url(["yt-dlp"], radio.DEFAULT_LOFI_URL, stop_event))
         terminate.assert_called_once_with(process, process_group=True)
 
     def test_invalid_or_multiple_media_urls_are_rejected(self):
@@ -292,10 +332,26 @@ class RadioResolverTests(unittest.TestCase):
                 radio.subprocess, "Popen", return_value=self.make_process(stdout=stdout)
             ), patch.object(radio, "_terminate_process"):
                 with self.assertRaises(RadioError):
-                    radio._resolve_ytdlp_url("yt-dlp", radio.DEFAULT_LOFI_URL, threading.Event())
+                    radio._resolve_ytdlp_url(["yt-dlp"], radio.DEFAULT_LOFI_URL, threading.Event())
 
 
 class RadioDependencyTests(unittest.TestCase):
+    def test_bundled_ytdlp_runs_through_the_current_interpreter(self):
+        # Works where its console script is not on PATH or is an .exe (pipx, Windows).
+        with patch.object(radio.importlib.util, "find_spec", return_value=Mock()), patch.object(
+            radio.shutil, "which", return_value=None
+        ):
+            self.assertEqual(
+                radio._resolve_ytdlp_command(), [radio.sys.executable, "-m", "yt_dlp"]
+            )
+
+    def test_ytdlp_on_path_is_used_when_not_installed_alongside(self):
+        with patch.object(radio.importlib.util, "find_spec", return_value=None):
+            with patch.object(radio.shutil, "which", side_effect={"yt-dlp": "/bin/yt-dlp"}.get):
+                self.assertEqual(radio._resolve_ytdlp_command(), ["/bin/yt-dlp"])
+            with patch.object(radio.shutil, "which", return_value=None):
+                self.assertIsNone(radio._resolve_ytdlp_command())
+
     def test_node_is_enabled_explicitly_when_deno_is_missing(self):
         paths = {"node": "/Applications/Node JS/bin/node"}
         with patch.object(radio.shutil, "which", side_effect=paths.get):
@@ -311,8 +367,10 @@ class RadioDependencyTests(unittest.TestCase):
             ])
 
     def test_missing_runtime_is_reported_before_starting_a_worker(self):
-        with patch.object(radio.shutil, "which", side_effect={"ffplay": "/bin/ffplay"}.get), patch.object(
-            radio, "_resolve_ytdlp_command", return_value="yt-dlp"
+        with patch.object(radio.sys, "version_info", (3, 10)), patch.object(
+            radio.shutil, "which", side_effect={"ffplay": "/bin/ffplay"}.get
+        ), patch.object(
+            radio, "_resolve_ytdlp_command", return_value=["yt-dlp"]
         ), patch.object(radio, "_RadioSession") as session:
             self.assertIn("Node.js", radio.start_radio(radio.DEFAULT_SYNTHWAVE_URL))
         session.assert_not_called()
